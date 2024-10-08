@@ -9,8 +9,7 @@ import os
 from pathlib import Path
 
 def addSSTPerturbation(
-    init_SST_file,
-    pert_SST_file,
+    pert_file,
     input_dir,
     output_dir,
     beg_dt,
@@ -32,12 +31,8 @@ def addSSTPerturbation(
     
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     
-    print("Load init SST file: ", init_SST_file)
-    ds_init_SST = xr.open_dataset(init_SST_file)
-
-    print("Load perturbation file: ", pert_SST_file)
-    ds_pert_SST = xr.open_dataset(pert_SST_file)
-
+    print("Load perturbation file: ", pert_file)
+    ds_SST_pert = xr.open_dataset(pert_file)
 
     for i in range(file_cnt):
         
@@ -65,7 +60,7 @@ def addSSTPerturbation(
         new_SST = ds["SST"].to_numpy()
         mask = new_SST == 0
 
-        new_SST += ds_pert_SST["pert_SST"].to_numpy()
+        new_SST += ds_SST_pert["pert_SST"].to_numpy()
         
         new_SST[mask] = 0.0
 
@@ -78,45 +73,22 @@ def addSSTPerturbation(
         )
     
 if __name__ == "__main__":
- 
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--input-dir', type=str, help='Input directory.', required=True)
-    parser.add_argument('--output-dir', type=str, help='Output directory.', required=True)
-    parser.add_argument('--init-SST-file', type=str, help="Init SST file.", required=True)
-    parser.add_argument('--pert-SST-file', type=str, help='Perturbation SST file.', required=True)
-    parser.add_argument('--output-init-time', type=str, help='Init time of the output file.', required=True)
-    parser.add_argument('--output-hours', type=int, help="How many hours.", required=True)
-    parser.add_argument('--output-interval', type=int, help="Interval of out put in hours.", required=True)
     
-    parser.add_argument('--pert-method', type=str, help='Perturbation method.', required=True, choices=["persistent_SST_anomaly", ])
-
-    args = parser.parse_args()
-
-    print(args)
-
-     
-    beg_dt          = pd.Timestamp(args.output_init_time)
-    output_timelen  = pd.Timedelta(hours=args.output_hours)
-    output_interval = pd.Timedelta(hours=args.output_interval)
+    pert_file = "/home/t2hsu/projects/CW3E-WWRF-practice/test/perturbation/pert_SST.d01.2022-01-07_00:00:00.nc"
+    input_dir = "/home/t2hsu/temp_project/WRF_RUNS/test_gcc"
+    output_dir = "/home/t2hsu/temp_project/WRF_RUNS/altered_SST"
+    beg_dt = pd.Timestamp("2022-01-07T06:00:00")
+    end_dt = pd.Timestamp("2022-01-08T00:00:00")
+    data_interval = pd.Timedelta(hours=3)
     
-    N = output_timelen / output_interval
-
-    if N % 1 != 0:
-        print("Warning: The time `--output-hours` is not a multiple of `--output-interval`.")
-
-    N = int(np.floor(N))
-    print("Will generate %d files." % (N,))
-  
-    end_dt = beg_dt + N * output_interval
-
     addSSTPerturbation(
-        args.init_SST_file,
-        args.pert_SST_file,
-        args.input_dir,
-        args.output_dir,
+        pert_file,
+        input_dir,
+        output_dir,
         beg_dt = beg_dt,
         end_dt = end_dt,
-        data_interval = output_interval,
+        data_interval = data_interval,
     )
 
+    print(ds.time)
 
