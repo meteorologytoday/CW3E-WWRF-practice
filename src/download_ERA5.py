@@ -186,7 +186,8 @@ def doJob(details, detect_phase=False):
                     era5_dataset_name = 'reanalysis-era5-pressure-levels'
                     params = {
                                 'product_type': 'reanalysis',
-                                'format': 'grib',
+                                'data_format': 'grib',
+                                'download_format': 'unarchived',
                                 'area': area,
                                 'time': download_time,
                                 'day': ["%02d" % d, ],
@@ -201,7 +202,8 @@ def doJob(details, detect_phase=False):
                     era5_dataset_name = 'reanalysis-era5-single-levels'
                     params = {
                                 'product_type': 'reanalysis',
-                                'format': 'grib',
+                                'data_format': 'grib',
+                                'download_format': 'unarchived',
                                 'area': area,
                                 'time': download_time,
                                 'day': ["%02d" % d, ],

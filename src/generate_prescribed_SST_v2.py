@@ -11,7 +11,6 @@ from pathlib import Path
 def addSSTPerturbation(
     init_SST_file,
     pert_SST_file,
-    clim_SST_file,
     input_dir,
     output_dir,
     beg_dt,
