@@ -32,27 +32,76 @@ sample_namelist_wrf = "/home/t2hsu/projects/CW3E-WWRF-practice/namelists/west-wr
 
 
 case_setup = dict(
+    
     WPS_DIR     = "/home/t2hsu/models/WRF_gcc/WPS-4.5",
     CASERUN_DIR = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/test_gcc_step2",
-    START_DATE = "",
     data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/",
+    
+    start_time = pd.Timestamp("2022-01-07T00:00:00"),
+    end_time = pd.Timestamp("2022-01-08T00:00:00"),
+
+    grid = dict(
+        NZ=100,
+        NX=828,
+        NY=570,
+        DX=0.08,
+        DY=0.08,
+        DX_PHY=8894.198,
+        DY_PHY=8894.198,
+   ),
+
     namelist = dict(
         WPS = "west-wrf-namelist.completed.wps",
         WRF = "west-wrf-namelist.completed.wrf",
     ),
+    
     Vtable = "ungrib/Variable_Tables/Vtable.ECMWF",
 
-    start_time = pd.Timestamp("2022-01-07T00:00:00"),
-    end_time = pd.Timestamp("2022-01-08T00:00:00"),
+)
+
+start_time = case_setup["start_time"]
+end_time = case_setup["end_time"]
+
+WPS_namelist_setup = dict(
+
+    START_DATE = start_time.strftime("%Y-%m-%d_%H:%M:%S"),
+    END_DATE1 = (SHARED_END_DATE := end_time.strftime("%Y-%m-%d_%H:%M:%S")),
+    END_DATE2 = SHARED_END_DATE,
+    END_DATE3 = SHARED_END_DATE,
+   
+    MAX_DOM=1,
+    NX1=case_setup["grid"]["NX"],
+    NY1=case_setup["grid"]["NY"],
+    DX1_DEG=case_setup["grid"]["DX"],
+    DY1_DEG=case_setup["grid"]["DY"],
+
+    PREFIX="ERA5",
 )
 
 WRF_namelist_setup = dict(
 
-    START_DATE = case_setup["start_time"].strftime("%Y-%m-%d_%H:%M:%S"),
-    END_DATE1 = (SHARED_END_DATE := case_setup["end_time"].strftime("%Y-%m-%d_%H:%M:%S")),
-    END_DATE2 = SHARED_END_DATE,
-    END_DATE3 = SHARED_END_DATE,
-    
+    START_MONTH  = start_time.strftime("%m"),
+    START_DAY    = start_time.strftime("%d"),
+    START_HOUR   = start_time.strftime("%H"),
+    START_MINUTE = start_time.strftime("%M"),
+    START_SECOND = start_time.strftime("%S"),
+
+    END_YEAR1   = (END_YEAR  := end_time.strftime("%Y")),
+    END_MONTH1  = (END_MONTH := end_time.strftime("%m")),
+    END_DAY1    = (END_DAY   := end_time.strftime("%d")),
+    END_HOUR1   = (END_HOUR  := end_time.strftime("%H")),
+    END_MINUTE = end_time.strftime("%M"),
+    END_SECOND = end_time.strftime("%S"),
+
+    END_YEAR2 = END_YEAR,
+    END_YEAR3 = END_YEAR,
+    END_MONTH2 = END_MONTH,
+    END_MONTH3 = END_MONTH,
+    END_DAY2 = END_DAY,
+    END_DAY3 = END_DAY,
+    END_HOUR2 = END_HOUR,
+    END_HOUR3 = END_HOUR,
+
     BDY_INTERVAL_SECONDS=10800,
     RESTART_OPT="F",
 
@@ -63,13 +112,11 @@ WRF_namelist_setup = dict(
     AUXHIST3_INTERVAL=360,
 
     MAX_DOM=1,
-    NZ=100,
-    NX1=828,
-    NY1=570,
-    DX1_DEG=0.08,
-    DY1_DEG=0.08,
-    DX1_PHY=8894.198,
-    DY1_PHY=8894.198,
+    NZ=case_setup["grid"]["NZ"],
+    NX1=case_setup["grid"]["NX"],
+    NY1=case_setup["grid"]["NY"],
+    DX1_PHY=case_setup["grid"]["DX_PHY"],
+    DY1_PHY=case_setup["grid"]["DY_PHY"],
 
     METGRID_LEVS=8,
 
@@ -79,98 +126,19 @@ WRF_namelist_setup = dict(
     NIO_TASKS=0,
     NIO_GROUPS=1,
 
-    PREFIX="ERA5",
-
     IO_FORM=2, # netcdf
        
 )
 
-print("Generating namelist file:", sample_namelist_wps)
-namelist_file_content = namelistSubstitution( open(sample_namelist_wps, 'r').read(), WRF_namelist_setup)
+print("##### Generating WPS namelist file:", sample_namelist_wps)
+namelist_file_content = namelistSubstitution( open(sample_namelist_wps, 'r').read(), WPS_namelist_setup)
 
 print("# After substitution")
 print(namelist_file_content)
 
+print("##### Generating WRF namelist file:", sample_namelist_wrf)
+namelist_file_content = namelistSubstitution( open(sample_namelist_wrf, 'r').read(), WRF_namelist_setup)
 
-"""
-START_YEAR=2022
-START_MONTH=01
-START_DAY=07
-START_HOUR=00
-START_MINUTE=00
-START_SECOND=00
+print("# After substitution")
+print(namelist_file_content)
 
-END_YEAR1=2022
-END_MONTH1=01
-END_DAY1=08
-END_HOUR1=00
-END_MINUTE=00
-END_SECOND=00
-
-END_YEAR2=$END_YEAR1
-END_MONTH2=$END_MONTH1
-END_DAY2=$END_DAY1
-END_HOUR2=$END_HOUR1
-
-END_YEAR3=$END_YEAR1
-END_MONTH3=$END_MONTH1
-END_DAY3=$END_DAY1
-END_HOUR3=$END_HOUR1
-
-
-START_DATE=${START_YEAR}-${START_MONTH}-${START_DAY}_${START_HOUR}:${START_MINUTE}:${START_SECOND}
-
-END_DATE1=${END_YEAR1}-${END_MONTH1}-${END_DAY1}_${END_HOUR1}:${END_MINUTE}:${END_SECOND}
-END_DATE2=${END_DATE1}
-END_DATE3=${END_DATE2}
-
-
-#NX1=414
-#NY1=285
-#DX1_DEG=0.16
-#DY1_DEG=0.16
-#DX1_PHY=8894.198
-#DY1_PHY=8894.198
-
-
-#NZ=100
-#NX1=207
-#NY1=142
-#DX1_DEG=0.32
-#DY1_DEG=0.32
-#DX1_PHY=35576.79
-#DY1_PHY=35576.79
-"""
-
-
-"""
-data = data.replace
-
-sed -e "s/__START_DATE__/${START_DATE}/g"     \
-    -e "s/__END_DATE1__/${END_DATE1}/g"       \
-    -e "s/__END_DATE2__/${END_DATE2}/g"       \
-    -e "s/__END_DATE3__/${END_DATE3}/g"       \
-    -e "s/__BDY_INTERVAL_SECONDS__/${BDY_INTERVAL_SECONDS}/g" \
-    -e "s/__MAX_DOM__/${MAX_DOM}/g"           \
-    -e "s/__PREFIX__/${PREFIX}/g"             \
-    -e "s/__NX1__/${NX1}/g"                   \
-    -e "s/__NY1__/${NY1}/g"                   \
-    -e "s/__DX1_DEG__/${DX1_DEG}/g"           \
-    -e "s/__DY1_DEG__/${DY1_DEG}/g"           \
-    $sample_namelist_wps > $namelist_wps
-
-
-
-class CLI:
-
-
-funcs = [
-    dict(
-        "Configure WPS",
-        "Configure WRF",
-    ),
-]
-
-
-
-"""
