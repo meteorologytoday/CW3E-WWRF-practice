@@ -7,11 +7,12 @@ import wrf_load_helper
 import datetime
 import os
 from pathlib import Path
+import clim_tools
+import scipy
 
 def addSSTPerturbation(
     init_SST_file,
     pert_SST_file,
-    clim_SST_file,
     input_dir,
     output_dir,
     beg_dt,
@@ -35,10 +36,14 @@ def addSSTPerturbation(
     
     print("Load init SST file: ", init_SST_file)
     ds_init_SST = xr.open_dataset(init_SST_file)
+    new_SST_base = ds_init_SST["SST"].to_numpy()
 
     print("Load perturbation file: ", pert_SST_file)
     ds_pert_SST = xr.open_dataset(pert_SST_file)
 
+    lat = ds_init_SST["XLAT_M"].to_numpy()[0, :, 0]
+    lon = ds_init_SST["XLONG_M"].to_numpy()[0, 0, :]
+    init_SST_clim = clim_tools.loadClim(beg_dt).to_numpy()
 
     for i in range(file_cnt):
         
@@ -62,14 +67,32 @@ def addSSTPerturbation(
        
         print("Processing file: ", input_full_filename)
         ds = xr.open_dataset(input_full_filename)
+        
+        current_SST_clim = clim_tools.loadClim(_dt).to_numpy()
+        clim_SST_diff = current_SST_clim - init_SST_clim
+        nan_idx_in_clim = np.isnan(clim_SST_diff)
+
 
         # Important: Use ds_init_SST
-        new_SST = ds_init_SST["SST"].to_numpy()
-        mask = new_SST == 0
+        new_SST = new_SST_base.copy()
+        lnd_mask = new_SST == 0
+        ocn_mask = np.logical_not(lnd_mask)
+       
 
-        new_SST += ds_pert_SST["pert_SST"].to_numpy()
+        #print("sum of lnd_mask: ", np.sum(lnd_mask))
+ 
+        nan_idx_in_both_clim_ocn = np.logical_and(nan_idx_in_clim, ocn_mask)
+        if np.sum(nan_idx_in_both_clim_ocn) == 0:
+            print("All points can be found in climatology files! ")
+        else:
+            print("There are %d points cannot find its climatology values. The trend at these points will be assigned as 0." % (np.sum(nan_idx_in_both_clim_ocn),))
         
-        new_SST[mask] = 0.0
+        clim_SST_diff[nan_idx_in_clim] = 0
+    
+        new_SST += ds_pert_SST["pert_SST"].to_numpy() + clim_SST_diff
+       
+        # Clear land values 
+        new_SST[lnd_mask] = 0.0
 
         ds["SST"][:, :, :] = new_SST
 
