@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import pandas as pd
 
 def namelistSubstitution(namelist_content, mapping):
     
@@ -21,7 +22,7 @@ def namelistSubstitution(namelist_content, mapping):
             print("Replacing %s => %s" % (searched_text, substr,))
             namelist_content = re.sub(p, substr, namelist_content)
         else:
-            print("Cannot find %s" % (searched_text,))
+            print("Warning: Cannot find %s" % (searched_text,))
 
     return namelist_content
 
@@ -41,12 +42,17 @@ case_setup = dict(
     ),
     Vtable = "ungrib/Variable_Tables/Vtable.ECMWF",
 
-    start_time = "2022-01-07T00:00:00",
-    end_time   = "2022-01-08T00:00:00",
+    start_time = pd.Timestamp("2022-01-07T00:00:00"),
+    end_time = pd.Timestamp("2022-01-08T00:00:00"),
 )
 
 WRF_namelist_setup = dict(
 
+    START_DATE = case_setup["start_time"].strftime("%Y-%m-%d_%H:%M:%S"),
+    END_DATE1 = (SHARED_END_DATE := case_setup["end_time"].strftime("%Y-%m-%d_%H:%M:%S")),
+    END_DATE2 = SHARED_END_DATE,
+    END_DATE3 = SHARED_END_DATE,
+    
     BDY_INTERVAL_SECONDS=10800,
     RESTART_OPT="F",
 
