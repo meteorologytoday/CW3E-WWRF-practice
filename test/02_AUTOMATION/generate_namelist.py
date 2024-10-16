@@ -8,7 +8,7 @@ import tools
 
 if __name__ == "__main__":
     
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='This program generates namelist files for WPS and WRF from a setup TOML file.')
     parser.add_argument('--setup', type=str, help='Setup TOML file.', required=True)
     parser.add_argument('--program', type=str, help='Either WRF or WPS.', choices=["WRF", "WPS"], required=True)
     parser.add_argument('--output', type=str, help='Output file.', default="")

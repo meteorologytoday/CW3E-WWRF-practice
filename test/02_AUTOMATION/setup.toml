@@ -2,6 +2,7 @@
 WPS_DIR = "/home/t2hsu/models/WRF_gcc/WPS-4.5"
 CASERUN_DIR = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/test_gcc_step2"
 data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/"
+
 start_time = "2022-01-07T00:00:00"
 end_time = "2022-01-08T00:00:00"
 

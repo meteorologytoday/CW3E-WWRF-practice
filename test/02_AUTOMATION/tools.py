@@ -4,6 +4,7 @@ import argparse
 import toml
 import re
 import pprint
+import time
 
 def searchSubstitution(s, verbose = True):
         
@@ -13,7 +14,6 @@ def searchSubstitution(s, verbose = True):
         print("Found the following namelist substitution:")
         for i, match in enumerate(matches):
             print("[%d] %s" % (i+1, match))
-
 
     return matches
 
