@@ -9,7 +9,7 @@ import os,shutil
 from pathlib import Path
 
 import clim_tools
-
+import EOF_tools
 
 def pleaseRun(cmds, cwd=None):
 
@@ -88,32 +88,42 @@ if __name__ == "__main__":
                 shutil.copyfile(from_filename, to_filename)
 
 
+    interpolated_grid_file     = os.path.join(args.bdy_data_dir, copy_files[0])
 
     # Step 4: Making interpolated climatology file
 
     cmb = clim_tools.climMagicBox(
-        raw_mon_SST_file           = case_setup["clim"]["raw_mon_SST_file"],
-        clim_SST_file              = case_setup["clim"]["clim_SST_file"],
+        raw_mon_SST_file           = case_setup["SST_perturbation"]["raw_mon_SST_file"],
+        clim_SST_file              = case_setup["SST_perturbation"]["clim_SST_file"],
         interpolated_clim_SST_file = os.path.join(args.bdy_data_dir, "interpolated_clim_sst.nc"),
-        interpolated_grid_file     = os.path.join(args.bdy_data_dir, copy_files[0]),
+        interpolated_grid_file     = interpolated_grid_file,
     )
 
     print("Generating clim files if not exist")
     cmb.genClim()
     cmb.genInterpolatedClim()
     
-    print("Generating projected EOF file")
-    
+    # Step 5: Making interpolated EOF file
+    interpolated_EOF_file = os.path.join(args.bdy_data_dir, "interpolated_EOF.nc")
+    print("Generating projected EOF file: ", interpolated_EOF_file)
+    if os.path.exists( interpolated_EOF_file ):
+        print("Warning: EOF file %s already exists." % (interpolated_EOF_file,))
+    else:
+        print("Generating interpolated EOF file: ", interpolated_EOF_file)
+        EOF_tools.genInterpolatedEOF(
+            EOF_file = case_setup["SST_perturbation"]["EOF_file"],
+            interpolated_grid_file = interpolated_grid_file,
+            interpolated_EOF_file = os.path.join(args.bdy_data_dir, "interpolated_EOF.nc"),
+        )
+          
     print("Generating perturbation files")
 
- 
-    print("Try loading clim on interpolated grid")
-    test_times = [ pd.Timestamp("2021-01-01") + pd.Timedelta(days=i) for i in range(365) ]
-    ds = cmb.loadClim(test_times)
+    #print("Try loading clim on interpolated grid")
+    #test_times = [ pd.Timestamp("2021-01-01") + pd.Timedelta(days=i) for i in range(365) ]
+    #ds = cmb.loadClim(test_times)
+    #ds.to_netcdf("mytest.nc")
 
-    ds.to_netcdf("mytest.nc")
 
-    # Step 5: Making interpolated EOF file
     # Step 6: Making perturbation file
     
     
