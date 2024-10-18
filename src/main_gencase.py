@@ -118,21 +118,44 @@ if __name__ == "__main__":
             print("Error: Directory %s already exists. " % (str(caserun_fullpath),))
             continue
 
-        # If use_symbolic is True, then symbolic link will be copy
-        # rather than the file content 
-        shutil.copytree(
-            caserun_scaffold,
-            caserun_fullpath,
-            symlinks=args.use_symbolic,
-            ignore_dangling_symlinks=args.use_symbolic,
-            
-        )
-        
+        caserun_fullpath.mkdir(exist_ok=True)
+
         print("Making softlinks of boundary files in %s" % (str(pert_file_dir),))
         for fileobj in pert_file_dir.glob("met_em*.nc"):
             print("Making softlink for file: ", str(fileobj))
             (caserun_fullpath / fileobj.name).symlink_to(fileobj)
         
-         
-    
+       
+        namelist_WRF = caserun_fullpath / "namelist.input.original"
+        print("Making namelist: ", str(namelist_WRF)) 
+        pleaseRun("python3 generate_namelist.py --setup={setup:s} --program=WRF --output={output:s}".format(
+            setup  = args.setup,
+            output = str(namelist_WRF), 
+        )) 
 
+        """
+        submit_file = caserun_fullpath / "submit.sh"
+        print("Making submit file %s" % (str(submit_file),))
+        submit_file_content = read ...
+        substitution_tools.stringSubstitution(
+            submit_file_content,
+            dict(
+                PARTITION = "cw3e-compute",
+                NODES = 1,
+                NPROC = 128,
+                JOBNAME = casename,
+            )
+        ) 
+
+        # If use_symbolic is True, then symbolic link will be copy
+        # rather than the file content
+        print("Copying files from scaffold directory: ", str(caserun_scaffold))
+        shutil.copytree(
+            caserun_scaffold,
+            caserun_fullpath,
+            symlinks=args.use_symbolic,
+            ignore_dangling_symlinks=args.use_symbolic,
+            dirs_exist_ok=True, 
+        )
+        """
+        
