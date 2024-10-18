@@ -10,14 +10,35 @@ from pathlib import Path
 import clim_tools
 import scipy
 
+def loadXarrayIfStr(fn, varname=None):
+    
+    if isinstance(fn, str):
+        print("Load file: ", fn)
+        ds = xr.open_dataset(fn)
+    elif isinstance(fn, xr.Dataset):
+        ds = fn
+    elif isinstance(fn, xr.DataArray):
+        ds = fn
+    else:
+        raise Exception("Unknown type of input: ", str(type(fn)))
+
+    # Return DataArray
+    if varname is not None:
+        if not isinstance(fn, xr.DataArray):
+            ds = ds[varname]
+       
+    return ds
+
+
 def addSSTPerturbation(
-    init_SST_file,
-    pert_SST_file,
+    init_SST,
+    pert_SST,
     input_dir,
     output_dir,
     beg_dt,
     end_dt,
     data_interval,
+    cmb,  # clim_tools.climMagicBox
     frames_per_file = 1,
     input_prefix = "met_em.d01.",
     input_suffix = ".nc",
@@ -33,17 +54,17 @@ def addSSTPerturbation(
     file_cnt = int(file_cnt)
     
     Path(output_dir).mkdir(parents=True, exist_ok=True)
-    
-    print("Load init SST file: ", init_SST_file)
-    ds_init_SST = xr.open_dataset(init_SST_file)
+
+    ds_init_SST = loadXarrayIfStr(init_SST)
+    da_pert_SST = loadXarrayIfStr(pert_SST, varname="pert_SST")
+
     new_SST_base = ds_init_SST["SST"].to_numpy()
 
-    print("Load perturbation file: ", pert_SST_file)
-    ds_pert_SST = xr.open_dataset(pert_SST_file)
 
     lat = ds_init_SST["XLAT_M"].to_numpy()[0, :, 0]
     lon = ds_init_SST["XLONG_M"].to_numpy()[0, 0, :]
-    init_SST_clim = clim_tools.loadClim(beg_dt).to_numpy()
+    
+    init_SST_clim = cmb.loadClim(beg_dt).to_numpy()
 
     for i in range(file_cnt):
         
@@ -68,7 +89,7 @@ def addSSTPerturbation(
         print("Processing file: ", input_full_filename)
         ds = xr.open_dataset(input_full_filename)
         
-        current_SST_clim = clim_tools.loadClim(_dt).to_numpy()
+        current_SST_clim = cmb.loadClim(_dt).to_numpy()
         clim_SST_diff = current_SST_clim - init_SST_clim
         nan_idx_in_clim = np.isnan(clim_SST_diff)
 
@@ -89,7 +110,7 @@ def addSSTPerturbation(
         
         clim_SST_diff[nan_idx_in_clim] = 0
     
-        new_SST += ds_pert_SST["pert_SST"].to_numpy() + clim_SST_diff
+        new_SST += da_pert_SST.to_numpy() + clim_SST_diff
        
         # Clear land values 
         new_SST[lnd_mask] = 0.0
