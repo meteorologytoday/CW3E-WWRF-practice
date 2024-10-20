@@ -14,23 +14,22 @@ cp namelist.input.original namelist.input
 
 
 echo "Running real.exe"
-mpirun -np $nproc ./real.exe
+mpirun -np $nproc ./real.exe &
+PID=$!
+tail --retry -f --pid=$PID rsl.out.0000 &>> log.run
 
-if [ "$?" != 0 ]; then 
-    
-    echo "Error: real.exe finished with error."    
-    exit 1
-
+exit_code=$?
+if [ "$exit_code" != 0 ]; then 
+    echo "Warning: real.exe finished with non-zero exit code ${exit_code}."    
 fi
 
 echo "Running wrf.exe"
-mpirun -np $nproc ./wrf.exe
+mpirun -np $nproc ./wrf.exe &
+PID=$!
+tail --retry -f --pid=$PID rsl.out.0000 &>> log.run
 
-if [ "$?" != 0 ]; then 
-    
-    echo "Error: wrf.exe finished with error."    
-    exit 1
-
+exit_code=$?
+if [ "$exit_code" != 0 ]; then 
+    echo "Warning: wrf.exe finished with non-zero exit code ${exit_code}."    
 fi
-
 

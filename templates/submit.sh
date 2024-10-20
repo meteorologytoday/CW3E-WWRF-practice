@@ -17,9 +17,9 @@ source /home/t2hsu/.bashrc_WRF_gcc
 copy_to_dir=${SLURM_SUBMIT_DIR}
 local_scratch=/scratch/${USER}/job_${SLURM_JOBID}
 log_file=log.run
+
 track_files=(
-    rsl.out.0000
-    rsl.error.0000
+    $log_file
 )
 
 echo "copy_to_dir = $copy_to_dir"
@@ -36,21 +36,25 @@ cd $local_scratch
 
 echo "Current directory: `pwd`"
 
-echo "Remove old log file."
-rm $log_file
+
+
+for track_file in "${track_files[@]}"; do
+    echo "Remove old track file if it exists: $track_file"
+    rm $track_file
+done
+
 
 echo "Running run_wrf.sh"
 bash run_wrf.sh __NPROC__ &> $log_file &
 
 PID=$!
 echo "WRF pid = $PID"
-
-
 for track_file in "${track_files[@]}"; do
     echo "Start tail the file: $track_file"
-    tail --retry -f --pid=$PID $track &
+    tail --retry -f --pid=$PID $track_file &
 done
 
+echo "Now hold."
 wait
 
 echo "Program finished. Copy files back to $copy_to_dir"
