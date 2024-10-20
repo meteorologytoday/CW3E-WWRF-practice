@@ -46,7 +46,7 @@ def addSSTPerturbation(
     output_suffix = ".nc",
 ):
 
-    file_cnt = ( end_dt - beg_dt ) / data_interval
+    file_cnt = ( end_dt - beg_dt ) / data_interval + 1
 
     if file_cnt % 1 != 0:
         raise Exception("The time selected is not a multiple of `data_interval`.")

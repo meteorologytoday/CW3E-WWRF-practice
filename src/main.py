@@ -126,6 +126,7 @@ if __name__ == "__main__":
             amps = case_setup["SST_perturbation"]["pert_amps"],
         )
     ]
+    
     flattened_pert_configs = []
     for pert_config in pert_configs:
         for mode in pert_config["modes"]:
@@ -141,6 +142,8 @@ if __name__ == "__main__":
        
         mode = pert_config["mode"]
         amp = pert_config["amp"]
+
+        print("Mode: %d, amp: %f" % (mode, amp,))
  
         input_dir = bdy_data_dir
         output_pert_dir = os.path.join(

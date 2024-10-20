@@ -12,7 +12,7 @@ from pathlib import Path
 import clim_tools
 import EOF_tools
 import gen_SST_tools
-
+import substitution_tools
 
 def pleaseRun(cmds, cwd=None):
 
@@ -45,6 +45,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='This high-level program oversees the entire process from downloading data, generating boundary files, adding perturbations to generating cases.')
     parser.add_argument('--setup', type=str, help='Setup TOML file.', required=True)
+    parser.add_argument('--template-dir', type=str, help='Submit file template.', default="/home/t2hsu/projects/CW3E-WWRF-practice/templates")
     parser.add_argument('--overwrite', action="store_true")
     parser.add_argument('--use-symbolic', action="store_true")
 
@@ -89,7 +90,7 @@ if __name__ == "__main__":
     
     for i, pert_config in enumerate(flattened_pert_configs): 
         
-        print("Doing the case %d" % (i,))
+        print("##### Doing the case %d ##### " % (i,))
         mode = pert_config["mode"]
         amp = pert_config["amp"]
 
@@ -108,7 +109,7 @@ if __name__ == "__main__":
         caserun_fullpath = caserun_root / casename
         pert_file_dir = bdy_data_dir / pert_label
 
-        # copy a scaffold
+
         print("Generating case {casename:s} under {caserun_root:s}.".format(
             casename = casename,
             caserun_root = str(caserun_root),
@@ -125,7 +126,7 @@ if __name__ == "__main__":
             print("Making softlink for file: ", str(fileobj))
             (caserun_fullpath / fileobj.name).symlink_to(fileobj)
         
-       
+
         namelist_WRF = caserun_fullpath / "namelist.input.original"
         print("Making namelist: ", str(namelist_WRF)) 
         pleaseRun("python3 generate_namelist.py --setup={setup:s} --program=WRF --output={output:s}".format(
@@ -133,11 +134,18 @@ if __name__ == "__main__":
             output = str(namelist_WRF), 
         )) 
 
-        """
+        template_dir = Path(args.template_dir)
+       
+        runwrf_file_src = template_dir / "run_wrf.sh"
+        runwrf_file_dst = caserun_fullpath / runwrf_file_src.name
+        print("Generating %s" % (runwrf_file_src.name,))
+        shutil.copyfile(runwrf_file_src, runwrf_file_dst)
+        os.chmod(runwrf_file_dst, mode=0o755)
+
         submit_file = caserun_fullpath / "submit.sh"
         print("Making submit file %s" % (str(submit_file),))
-        submit_file_content = read ...
-        substitution_tools.stringSubstitution(
+        submit_file_content = open(template_dir / "submit.sh").read()
+        submit_file_content = substitution_tools.stringSubstitution(
             submit_file_content,
             dict(
                 PARTITION = "cw3e-compute",
@@ -145,8 +153,14 @@ if __name__ == "__main__":
                 NPROC = 128,
                 JOBNAME = casename,
             )
-        ) 
+        )
+        with open(submit_file, "w") as f:
+            f.write(submit_file_content)
+        
+        os.chmod(submit_file, mode=0o755)
 
+
+        # copy a scaffold
         # If use_symbolic is True, then symbolic link will be copy
         # rather than the file content
         print("Copying files from scaffold directory: ", str(caserun_scaffold))
@@ -157,5 +171,4 @@ if __name__ == "__main__":
             ignore_dangling_symlinks=args.use_symbolic,
             dirs_exist_ok=True, 
         )
-        """
         

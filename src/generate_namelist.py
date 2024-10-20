@@ -114,7 +114,7 @@ if __name__ == "__main__":
             RESTART_OPT="F",
 
             # in minutes
-            HISTORY1_INTERVAL=60,
+            HISTORY1_INTERVAL=case_setup["WRF"]["HISTORY_INTERVAL"],
             HISTORY2_INTERVAL=999999,
             HISTORY3_INTERVAL=999999,
             AUXHIST3_INTERVAL=360,
