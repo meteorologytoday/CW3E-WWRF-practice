@@ -9,8 +9,8 @@ end_time = "2022-01-08T00:00:00"
 [caserun]
 caserun_label = "test20241018"
 caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/WWRF_runs"
-caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.4.1/run"
-bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/test_bdy"
+caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
+bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/WWRF_bdy"
 
 [SST_perturbation]
 raw_mon_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/data/sst.mon.mean.nc"
