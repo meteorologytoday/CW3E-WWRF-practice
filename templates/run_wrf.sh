@@ -9,6 +9,9 @@ nproc=$1
 
 echo "Received parameter: nproc = $nproc."
 
+# Check restart setup
+
+
 echo "Copy namelist.input.original -> namelist.input"
 cp namelist.input.original namelist.input
 

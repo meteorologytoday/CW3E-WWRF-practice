@@ -133,6 +133,10 @@ if __name__ == "__main__":
        
         pert_SST *= amp / np.nanstd(pert_SST)
 
+        nan_cnt = np.sum(np.isnan(pert_SST))
+        print("There are %d NaN points in EOF. Replace them with 0.0.")
+        pert_SST = pert_SST.fillna(0.0)
+
         #tmp = init_SST["SST"].to_numpy()
         #tmp[tmp != 0] = 1e-6
         #init_SST["SST"][:] = tmp

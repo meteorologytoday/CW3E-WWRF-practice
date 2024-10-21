@@ -57,7 +57,7 @@ def genInterpolatedEOF(
     new_lon = ds_gd["XLONG_M"].to_numpy()[0, :, :]
     
     new_data = interpFromRegularGrid(lat, lon, data, new_lat, new_lon)
-   
+
     new_ds = xr.Dataset(
         data_vars=dict(
             sst = (["mode", "south_north", "west_east"], new_data),

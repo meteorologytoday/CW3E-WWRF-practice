@@ -58,7 +58,18 @@ echo "Now hold."
 wait
 
 echo "Program finished. Copy files back to $copy_to_dir"
-ls | xargs -I % cp --verbose % -t $copy_to_dir
 
-echo "Output files copied."
 
+for prefix in rsl wrfinput wrfout wrfrst ; do 
+
+    echo "Copying file group: $prefix"
+
+    output_dir=$copy_to_dir/output/$prefix
+
+    mkdir -p $output_dir
+
+    ls | grep $prefix | xargs -I % cp --verbose % -t $output_dir
+
+done
+
+echo "Done"

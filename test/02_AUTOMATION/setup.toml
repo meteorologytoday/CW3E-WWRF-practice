@@ -4,12 +4,14 @@ WPS_DIR = "/home/t2hsu/models/WRF_gcc/WPS-4.5"
 data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/"
 
 start_time = "2023-01-01T00:00:00"
-end_time = "2023-01-02T00:00:00"
+end_time = "2023-01-13T00:00:00"
+subdivide_run_hours = 24  # hr
 
 [caserun]
 caserun_label = "test20241018"
 caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/0.16deg/WWRF_runs"
-caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
+#caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
+caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.4.1/run"
 bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/0.16deg/WWRF_bdy"
 
 [SST_perturbation]

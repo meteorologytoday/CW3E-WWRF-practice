@@ -33,7 +33,7 @@
  frames_per_auxhist3                 = 1, 1, 1,
  io_form_auxhist3                    = __IO_FORM__,
  adjust_output_times                 = .true.,
- iofields_filename                   = "aux_var_file_d01.txt", "aux_var_file_d02.txt", "aux_var_file_d03.txt",
+! iofields_filename                   = "aux_var_file_d01.txt", "aux_var_file_d02.txt", "aux_var_file_d03.txt",
 ! nocolons                            = .true.,
  debug_level                         = 0
  /
