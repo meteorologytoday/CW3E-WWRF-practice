@@ -1,0 +1,9 @@
+start_time = "2023-01-01 00:00:00"
+end_time = "2023-01-02 00:00:00"
+submit_count = 1
+domain = 1
+resubmit_interval_hr = 1
+input_nml = "namelist.input.original"
+output_nml = "namelist.input"
+submit_file = "submit.sh"
+submit_count_max = 24

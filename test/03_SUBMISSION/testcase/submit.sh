@@ -1,21 +1,19 @@
 #!/bin/bash
-#SBATCH -p __PARTITION__
-#SBATCH --nodes=__NODES__
-#SBATCH --ntasks-per-node=__NPROC__
+#SBATCH -p cw3e-shared
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH -t 50:00:00
-#SBATCH -J __JOBNAME__
+#SBATCH -J testsubmit
 #SBATCH -A csg102
-#SBATCH -o __JOBNAME__.%j.%N.out
-#SBATCH -e __JOBNAME__.%j.%N.err
+#SBATCH -o testsubmit.0.%j.%N.out
+#SBATCH -e testsubmit.0.%j.%N.err
 #SBATCH --export=ALL
-
 
 
 export SLURM_EXPORT_ENV=ALL
 
 echo "Source the module file..."
-source /home/t2hsu/.bashrc
 conda activate lab1
 source /home/t2hsu/.bashrc_WRF_gcc
 echo "Done"
@@ -51,17 +49,7 @@ done
 
 
 echo "Running run_wrf.sh"
-bash run_wrf.sh __NPROC__ &> $log_file &
-
-PID=$!
-echo "WRF pid = $PID"
-for track_file in "${track_files[@]}"; do
-    echo "Start tail the file: $track_file"
-    tail --retry -f --pid=$PID $track_file &
-done
-
-echo "Now hold."
-wait
+#bash run_wrf.sh 128 &> $log_file &
 
 echo "Program finished. Copy files back to $copy_to_dir"
 

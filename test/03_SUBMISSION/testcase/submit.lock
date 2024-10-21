@@ -1,0 +1,13 @@
+start_time = "2023-01-01 00:00:00"
+end_time = "2023-01-02 00:00:00"
+submit_count = 1
+domain = 1
+resubmit_interval_hr = 1
+input_nml = "namelist.input.original"
+output_nml = "namelist.input"
+submit_file = "submit.sh"
+submit_count_max = 24
+submit_real_time = "2024-10-21 14:40:54.393646"
+submit_start_time = "2023-01-01 00:00:00"
+submit_end_time = "2023-01-01 01:00:00"
+submit_message = "Submitted batch job 34604270\n"
