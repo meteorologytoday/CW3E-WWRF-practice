@@ -128,6 +128,10 @@ if __name__ == "__main__":
             ),
         ))
 
+        if output_pert_dir.exists():
+            print("Output directory %s already exists. Skip." % (str(output_pert_dir),))
+            continue
+
         init_SST = xr.open_dataset(bdy_data_dir / bdy_files[0])
         pert_SST = xr.open_dataset(interpolated_EOF_file)["sst"].isel(mode=mode)
        

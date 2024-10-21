@@ -15,7 +15,6 @@
 export SLURM_EXPORT_ENV=ALL
 
 echo "Source the module file..."
-activate lab1
 source /home/t2hsu/.bashrc_WRF_gcc
 echo "Done"
 
@@ -34,15 +33,15 @@ echo "Log file name    : $log_file"
 
 echo "Copying files to local scratch"
 
-ls | grep -v -e output -e wrfout -e wrfrst -e ".err" -e ".out" | xargs -I % cp % -t $local_scratch
-
-if [ -d "./output/wrfrst" ] ; then
-    ln -s ./output/wrfrst/* $local_scratch
-fi
+ls | grep -v -e wrfout -e wrfrst -e ".err" -e ".out" | xargs -I % cp % -t $local_scratch
 
 cd $local_scratch
 
+
 echo "Current directory: `pwd`"
+
+
+
 for track_file in "${track_files[@]}"; do
     echo "Remove old track file if it exists: $track_file"
     rm $track_file
@@ -68,18 +67,13 @@ echo "Program finished. Copy files back to $copy_to_dir"
 for prefix in rsl wrfinput wrfout wrfrst ; do 
 
     echo "Copying file group: $prefix"
+
     output_dir=$copy_to_dir/output/$prefix
+
     mkdir -p $output_dir
+
     ls | grep $prefix | xargs -I % cp --verbose % -t $output_dir
 
 done
-
-
-# Unlock
-python3 restart_engine.py --unlock
-
-# Submit
-python3 restart_engine.py --submit
-
 
 echo "Done"

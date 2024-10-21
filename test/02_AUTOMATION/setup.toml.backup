@@ -4,25 +4,24 @@ WPS_DIR = "/home/t2hsu/models/WRF_gcc/WPS-4.5"
 data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/"
 
 start_time = "2023-01-01T00:00:00"
-end_time = "2023-01-02T00:00:00"
-resubmit_interval_hr = 1 
-restart_interval_min = 60
+end_time = "2023-01-13T00:00:00"
+resubmit_interval_hr = 120
 
 [caserun]
 caserun_label = "test20241018"
-caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/resubmit_test/WWRF_runs"
-bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/resubmit_test/WWRF_bdy"
+caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/0.16deg/WWRF_runs"
 #caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
 caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.4.1/run"
-
+bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/0.16deg/WWRF_bdy"
 
 [SST_perturbation]
 raw_mon_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/data/sst.mon.mean.nc"
 clim_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/gendata/clim_sst.nc"
 EOF_file = "/home/t2hsu/projects/CW3E-WWRF-practice/data/EOFs_GHRSST,MUR_JPL,OSTIA_UKMO,DMIOI_DMI,GAMSSA_ABOM,K10SST_NAVO,GPBN_OSPO_decentralize-F_WWRF_sst_Y2020-2023_P-6-11.nc"
 pert_modes = [1]
-#pert_amps  = [-0.5, -0.3, 0.0, 0.3, 0.5,]
-pert_amps  = [0.0,]
+pert_amps  = [-0.5, -0.3, 0.0, 0.3, 0.5, 1.0]
+#pert_modes = [0]
+#pert_amps  = [0.4]
 
 
 [grid]
@@ -42,14 +41,16 @@ DY_PHY = 17788.396
 #DX_PHY = 8894.198
 #DY_PHY = 8894.198
 
+
+
+
 NPROC_X = 16
 NPROC_Y = 8
 METGRID_LEVS = 8
 
 
 [bdy]
-#BDY_INTERVAL_SECONDS = 10800
-BDY_INTERVAL_SECONDS = 3600
+BDY_INTERVAL_SECONDS = 10800
 
 [WRF]
 HISTORY_INTERVAL = 60 # minutes

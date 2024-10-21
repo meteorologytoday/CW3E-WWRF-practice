@@ -10,8 +10,14 @@ nproc=$1
 echo "Received parameter: nproc = $nproc."
 
 # Check restart setup
+
 # Check which restart segment we are in
+
 # Modify namelist accordingly
+
+echo "Copy namelist.input.original -> namelist.input"
+cp namelist.input.original namelist.input
+
 
 echo "Running real.exe"
 mpirun -np $nproc ./real.exe &

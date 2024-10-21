@@ -120,7 +120,28 @@ if __name__ == "__main__":
             continue
 
         caserun_fullpath.mkdir(exist_ok=True)
+        
+        template_dir = Path(args.template_dir)
 
+        submit_detail_file = caserun_fullpath / "submit_detail.toml"
+        print("Making file for resubmit purpose: %s" % (str(submit_detail_file),))
+        with open(submit_detail_file, "w") as f:
+            toml.dump(dict(
+                start_time = str(start_time),
+                end_time = str(end_time),
+                submit_count = 0,
+                domain = 1,
+                resubmit_interval_hr = case_setup["resubmit_interval_hr"],
+                input_nml = "namelist.input.original", 
+                output_nml = "namelist.input",
+                submit_file = "submit.sh", 
+            ), f)
+        
+        submit_engine = template_dir / "submit_engine.py"
+        print("Copy file: ", submit_engine)
+        shutil.copyfile(submit_engine, caserun_fullpath / submit_engine.name)
+        
+ 
         print("Making softlinks of boundary files in %s" % (str(pert_file_dir),))
         for fileobj in pert_file_dir.glob("met_em*.nc"):
             print("Making softlink for file: ", str(fileobj))
@@ -134,7 +155,7 @@ if __name__ == "__main__":
             output = str(namelist_WRF), 
         )) 
 
-        template_dir = Path(args.template_dir)
+
        
         runwrf_file_src = template_dir / "run_wrf.sh"
         runwrf_file_dst = caserun_fullpath / runwrf_file_src.name

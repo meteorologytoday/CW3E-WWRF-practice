@@ -21,7 +21,7 @@
  history_outname                     = "wrfout_d<domain>_<date>_temp",
  frames_per_outfile                  = 1, 1,
  restart                             = .false.,
- restart_interval                    = 7200,
+ restart_interval                    = __RESTART_INTERVAL_MIN__,
  io_form_history                     = 2
  io_form_restart                     = 2
  io_form_input                       = 2
