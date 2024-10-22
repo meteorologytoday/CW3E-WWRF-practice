@@ -9,6 +9,14 @@ import numpy as np
 import shlex, subprocess, shutil
 import sys
 
+def exitIfLocked(lock_file):
+    lock_file = Path(lock_file)
+    if lock_file.exists():
+        print("The lock file %s exists. Abort the submission process." % (str(lock_file),))
+        sys.exit(1)
+
+
+
 def pleaseRun(cmds, cwd=None, store_output=False):
 
     if isinstance(cmds, str):
@@ -55,17 +63,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='This program modifies namelist.input to allow resubmit for resubmit.')
     parser.add_argument('--setup', type=str, help='Input TOML setup file containing start_time and end_time.', default="submit_detail.toml")
     parser.add_argument('--lock-file', type=str, help='A lock file to prevent multiple submission.', default="submit.lock")
-    parser.add_argument('--reset-submit-count', action="store_true", help='Reset the submit count to zero')
+    
     parser.add_argument('--unlock', action="store_true", help='Remove lock file')
+    parser.add_argument('--reset-submit-count', action="store_true", help='Reset the submit count to zero')
     parser.add_argument('--fake-submit', action="store_true")
     parser.add_argument('--submit', action="store_true")
+    parser.add_argument('--check-output', action="store_true", help='Check if restart file is generated. If so, add 1 to submit count.')
     args = parser.parse_args()
 
     pprint.pprint(args)
     
     setup = toml.load(args.setup)
- 
-   
+     
     if args.unlock:
         print("The option `--unlock` is flagged. Remove lock file: ", args.lock_file)
         lock_file = Path(args.lock_file)
@@ -75,8 +84,11 @@ if __name__ == "__main__":
         
         sys.exit(0)
          
-    if args.reset_submit_count:
+    
+    # Check lock file    
+    exitIfLocked(args.lock_file)
 
+    if args.reset_submit_count:
         print("The option `--reset-submit-cout` is flagged. Reset submit_count.")
 
         setup['submit_count'] = 0
@@ -86,14 +98,9 @@ if __name__ == "__main__":
         sys.exit(0) 
 
 
-    if args.submit:
+    elif args.submit:
         
         print("The option `--submit` is flagged. Start the submission process.")
-
-        lock_file = Path(args.lock_file)
-        if lock_file.exists():
-            print("The lock file %s exists. Abort the submission process." % (str(lock_file),))
-            sys.exit(1)
      
         domain_idx = setup['domain'] - 1
         
@@ -120,9 +127,11 @@ if __name__ == "__main__":
         else: 
 
             if submit_count == 0:
-                print("This is the first submit!")
+                print("This is the first submit! Set restart = .false.")
+                nml["time_control"]["restart"] = False
             else:
-                print("Looks like we need to submit again!")
+                print("This is a restart run! Set restart = .true.")
+                nml["time_control"]["restart"] = True
 
             new_start_time = start_time + submit_count * resubmit_interval
             new_end_time = new_start_time + resubmit_interval
@@ -141,14 +150,15 @@ if __name__ == "__main__":
             nml["time_control"]["end_minute"][domain_idx] = new_end_time.minute
             nml["time_control"]["end_second"][domain_idx] = new_end_time.second
             
-            setup["submit_count"] += 1
+            # cannot do it here
+            #setup["submit_count"] += 1
 
             
             f90nml.write(nml, setup["output_nml"], sort=True, force=True)
             setup['submit_count_max']   = submit_count_max
             
-            with open(args.setup, "w") as f:
-                toml.dump(setup, f)
+            #with open(args.setup, "w") as f:
+            #    toml.dump(setup, f)
      
             cmd = "sbatch %s" % (setup["submit_file"],)
              
@@ -167,7 +177,42 @@ if __name__ == "__main__":
                     setup['submit_message'] = ",".join(submit_info[0])
                     
                 toml.dump(setup, f)
+
+            sys.exit(0)
  
+    elif args.check_output:
+        
+        print("The option `--check-output` is flagged.")
+        
+        start_time = pd.Timestamp(setup["start_time"])
+        end_time = pd.Timestamp(setup["end_time"])
+        resubmit_interval = pd.Timedelta(hours=setup["resubmit_interval_hr"])
+        submit_count = setup['submit_count']
+        
+        new_start_time = start_time + submit_count * resubmit_interval
+        new_end_time = new_start_time + resubmit_interval
+        
+        # Check if restart file exists
+        target_file = Path(".") / "output" / "wrfrst" / "wrfrst_d01_{timestr:s}".format(
+            timestr = new_end_time.strftime("%Y-%m-%d_%H:%M:%S")
+        )
+        
+        print("Check if target file exists: %s" % (str(target_file),))
+        if target_file.exists():
+            print("Yes. WRF run is successful.")
+            with open(args.setup, "w") as f:
+                new_submit_count = submit_count + 1
+                print("Now increse submit count from %d => %d" % (submit_count, new_submit_count,))
+                setup["submit_count"] = new_submit_count
+                toml.dump(setup, f)
 
+            sys.exit(0)
+        else:
+            print("No. Warning: WRF run failed because I cannot find target file ", str(target_file))
+            print("Information: submit_count={submit_count:d}. Sim time = {start_time:s} ~ {end_time:s}".format(
+                submit_count = submit_count,
+                start_time = new_start_time.strftime("%Y-%m-%d_%H:%M:%S"),
+                end_time = new_end_time.strftime("%Y-%m-%d_%H:%M:%S"),
+            ))
 
-
+            sys.exit(1)

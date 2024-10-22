@@ -112,7 +112,7 @@ if __name__ == "__main__":
             END_HOUR3 = END_HOUR,
 
             RESTART_OPT="F",
-            RESTART_INTERVAL_MIN = 60,
+            RESTART_INTERVAL_MIN = case_setup["restart_interval_min"],
 
             # in minutes
             HISTORY1_INTERVAL=case_setup["WRF"]["HISTORY_INTERVAL"],

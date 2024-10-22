@@ -5,8 +5,8 @@ data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/"
 
 start_time = "2023-01-01T00:00:00"
 end_time = "2023-01-18T00:00:00"
-resubmit_interval_hr = 240 
-restart_interval_min = 7200
+resubmit_interval_hr = 3 
+restart_interval_min = 180
 
 [caserun]
 caserun_label = "test20241018"
@@ -49,7 +49,7 @@ METGRID_LEVS = 8
 BDY_INTERVAL_SECONDS = 10800
 
 [WRF]
-HISTORY_INTERVAL = 60 # minutes
+HISTORY_INTERVAL = 180 # minutes
 
 
 [WPS]

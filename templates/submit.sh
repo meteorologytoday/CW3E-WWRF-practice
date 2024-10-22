@@ -80,8 +80,15 @@ cd $SLURM_SUBMIT_DIR
 # Unlock
 python3 submit_engine.py --unlock
 
+# Check
+python3 submit_engine.py --check-output
+
+exit_code=$?
+if [ "$exit_code" != 0 ]; then 
+    echo "Warning: Output check failed with non-zero exit code ${exit_code}."    
+fi
+
 # Submit
+echo "Try submitting."
 python3 submit_engine.py --submit
 
-
-echo "Done"
