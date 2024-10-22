@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     if args.submit:
         
-        print("The option `--submit` is flagged. Start submitting.")
+        print("The option `--submit` is flagged. Start the submission process.")
 
         lock_file = Path(args.lock_file)
         if lock_file.exists():
@@ -119,7 +119,10 @@ if __name__ == "__main__":
        
         else: 
 
-            print("Looks like we need to submit again!")
+            if submit_count == 0:
+                print("This is the first submit!")
+            elif:
+                print("Looks like we need to submit again!")
 
             new_start_time = start_time + submit_count * resubmit_interval
             new_end_time = new_start_time + resubmit_interval
@@ -139,20 +142,21 @@ if __name__ == "__main__":
             nml["time_control"]["end_second"][domain_idx] = new_end_time.second
             
             setup["submit_count"] += 1
-            setup['submit_count_max']   = submit_count_max
+
             
             f90nml.write(nml, setup["output_nml"], sort=True, force=True)
+            setup['submit_count_max']   = submit_count_max
             
             with open(args.setup, "w") as f:
                 toml.dump(setup, f)
      
-           
             cmd = "sbatch %s" % (setup["submit_file"],)
              
             if args.fake_submit:
                 print("Fake submit >> ", cmd)
             else:
                  submit_info = pleaseRun(cmd, store_output=True)
+            
 
             with open(args.lock_file, "w") as f:
                 setup['submit_real_time'] = str(pd.Timestamp.now())

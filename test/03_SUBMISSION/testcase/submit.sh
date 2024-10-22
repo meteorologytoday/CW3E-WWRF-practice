@@ -14,6 +14,7 @@
 export SLURM_EXPORT_ENV=ALL
 
 echo "Source the module file..."
+source /home/t2hsu/.bashrc
 conda activate lab1
 source /home/t2hsu/.bashrc_WRF_gcc
 echo "Done"

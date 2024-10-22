@@ -128,8 +128,8 @@
     auxhist3_outname = '15min_d<domain>_<date>_temp'
     bdy_inname = 'wrfbdy_d<domain>_<date>'
     debug_level = 0
-    end_day = 1, 2, 2
-    end_hour = 1, 0, 0
+    end_day = 21, 2, 2
+    end_hour = 0, 0, 0
     end_minute = 0, 0, 0
     end_month = 1, 1, 1
     end_second = 0, 0, 0
@@ -148,7 +148,7 @@
     output_diagnostics = 1
     restart = .false.
     restart_interval = 720
-    start_day = 1, 1, 1
+    start_day = 16, 1, 1
     start_hour = 0, 0, 0
     start_minute = 0, 0, 0
     start_month = 1, 1, 1

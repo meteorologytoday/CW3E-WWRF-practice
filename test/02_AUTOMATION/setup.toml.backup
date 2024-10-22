@@ -10,8 +10,7 @@ resubmit_interval_hr = 120
 [caserun]
 caserun_label = "test20241018"
 caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/0.16deg/WWRF_runs"
-#caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
-caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.4.1/run"
+caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
 bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/0.16deg/WWRF_bdy"
 
 [SST_perturbation]
