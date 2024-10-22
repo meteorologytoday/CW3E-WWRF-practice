@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
             if submit_count == 0:
                 print("This is the first submit!")
-            elif:
+            else:
                 print("Looks like we need to submit again!")
 
             new_start_time = start_time + submit_count * resubmit_interval

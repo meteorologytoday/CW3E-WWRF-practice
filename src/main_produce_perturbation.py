@@ -44,6 +44,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='This high-level program oversees the entire process from downloading data, generating boundary files, adding perturbations to generating cases.')
     parser.add_argument('--setup', type=str, help='Setup TOML file.', required=True)
+    parser.add_argument('--overwrite', action='store_true')
 
     args = parser.parse_args()
 
@@ -129,8 +130,13 @@ if __name__ == "__main__":
         ))
 
         if output_pert_dir.exists():
-            print("Output directory %s already exists. Skip." % (str(output_pert_dir),))
-            continue
+
+            if args.overwrite:
+                print("Output directory %s already exists but `--overwrite` is flagged. Keep generating the data..." % (str(output_pert_dir),))
+            
+            else:
+                print("Output directory %s already exists. Skip." % (str(output_pert_dir),))
+                continue
 
         init_SST = xr.open_dataset(bdy_data_dir / bdy_files[0])
         pert_SST = xr.open_dataset(interpolated_EOF_file)["sst"].isel(mode=mode)
