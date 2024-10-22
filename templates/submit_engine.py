@@ -74,7 +74,7 @@ if __name__ == "__main__":
     pprint.pprint(args)
     
     setup = toml.load(args.setup)
-     
+
     if args.unlock:
         print("The option `--unlock` is flagged. Remove lock file: ", args.lock_file)
         lock_file = Path(args.lock_file)
@@ -216,3 +216,8 @@ if __name__ == "__main__":
             ))
 
             sys.exit(1)
+
+
+    else:
+
+        print("Warning: You have not flagged anything. No action is taken.")
