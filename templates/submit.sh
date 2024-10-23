@@ -24,6 +24,8 @@ copy_to_dir=${SLURM_SUBMIT_DIR}
 local_scratch=/scratch/${USER}/job_${SLURM_JOBID}
 log_file=log.run
 
+wrfrst_dir=${SLURM_SUBMIT_DIR}/output/wrfrst
+
 track_files=(
     $log_file
 )
@@ -32,18 +34,18 @@ echo "copy_to_dir = $copy_to_dir"
 echo "Local scratch    : $local_scratch"
 echo "SLURM_SUBMIT_DIR : $SLURM_SUBMIT_DIR"
 echo "Log file name    : $log_file"
-
 echo "Copying files to local scratch"
 
 ls | grep -v -e output -e wrfout -e wrfrst -e ".err" -e ".out" | xargs -I % cp % -t $local_scratch
 
-if [ -d "./output/wrfrst" ] ; then
-    ln -s ./output/wrfrst/* $local_scratch
+cd $local_scratch
+echo "Current directory: `pwd`"
+
+echo "Make soft links of restart files if any."
+if [ -d "$wrfrst_dir" ] ; then
+    ln -s $wrfrst_dir/* ./
 fi
 
-cd $local_scratch
-
-echo "Current directory: `pwd`"
 for track_file in "${track_files[@]}"; do
     echo "Remove old track file if it exists: $track_file"
     rm $track_file

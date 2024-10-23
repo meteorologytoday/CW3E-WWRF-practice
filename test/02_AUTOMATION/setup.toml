@@ -5,13 +5,13 @@ data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/"
 
 start_time = "2023-01-01T00:00:00"
 end_time = "2023-01-18T00:00:00"
-resubmit_interval_hr = 3 
-restart_interval_min = 180
+resubmit_interval_hr = 120 
+restart_interval_min = 7200
 
 [caserun]
-caserun_label = "test20241018"
-caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/0.16deg/WWRF_runs"
-bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/0.16deg/WWRF_bdy"
+caserun_label = "PRELIMINARY"
+caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/0.16deg/runs"
+bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/0.16deg/bdy"
 caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
 
 
