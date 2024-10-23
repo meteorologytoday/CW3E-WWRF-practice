@@ -122,7 +122,7 @@ if __name__ == "__main__":
         print("Current resubmit count: ", submit_count)
 
         if submit_count == submit_count_max:
-            print("Resubmit max reached! There is no need to resubmit.")
+            print("Resubmit max reached, the runs are all done! There is no need to resubmit.")
        
         else: 
 
@@ -135,7 +135,9 @@ if __name__ == "__main__":
 
             new_start_time = start_time + submit_count * resubmit_interval
             new_end_time = new_start_time + resubmit_interval
-            
+            if new_end_time > end_time:
+                new_end_time = end_time
+                
             nml["time_control"]["start_year"][domain_idx]   = new_start_time.year
             nml["time_control"]["start_month"][domain_idx]  = new_start_time.month
             nml["time_control"]["start_day"][domain_idx]    = new_start_time.day
@@ -189,16 +191,60 @@ if __name__ == "__main__":
         resubmit_interval = pd.Timedelta(hours=setup["resubmit_interval_hr"])
         submit_count = setup['submit_count']
         
+        submit_count_max = (end_time - start_time) / resubmit_interval
+
+        # If it is not an integer, that means the alst restart file
+        # will not be produced. We can only check the wrfout file. 
+        has_last_wrfrst = submit_count_max % 1 == 0 
+        
+        submit_count_max = int(np.ceil(submit_count_max))
+
+        if submit_count == submit_count_max:
+            print("Resubmit max reached, the runs are all done! There is no need to resubmit.")
+            sys.exit(0)
+ 
+
+
+        last_submit = submit_count == submit_count_max - 1
+       
+
         new_start_time = start_time + submit_count * resubmit_interval
         new_end_time = new_start_time + resubmit_interval
-        
-        # Check if restart file exists
-        target_file = Path(".") / "output" / "wrfrst" / "wrfrst_d01_{timestr:s}".format(
+
+        if new_end_time > end_time:
+            new_end_time = end_time
+ 
+
+       
+        wrfrst_file = Path(".") / "output" / "wrfrst" / "wrfrst_d01_{timestr:s}".format(
             timestr = new_end_time.strftime("%Y-%m-%d_%H:%M:%S")
         )
+
+        wrfout_file = Path(".") / "output" / "wrfout" / "wrfout_d01_{timestr:s}{suffix:s}".format(
+            timestr = new_end_time.strftime("%Y-%m-%d_%H:%M:%S"),
+            suffix = setup["wrfout_suffix"] if "wrfout_suffix" in setup else "",
+        )
+
+        target_files = []
+        target_files.append(wrfout_file)
+
+        if last_submit:
+            if has_last_wrfrst:
+                target_files.append(wrfrst_file)
+            else:
+                print("It won't have last restart file.")
+        else:
+            target_files.append(wrfrst_file)
+
+ 
+        # Check if target_files exist
+        files_exist = [ target_file.exists() for target_file in target_files ]
         
-        print("Check if target file exists: %s" % (str(target_file),))
-        if target_file.exists():
+        print("Check if target file exists: ")
+        for i, target_file in enumerate(target_files):
+            print("[%d] %s" % (i, str(target_file), ))
+        
+        if np.all(files_exist):
             print("Yes. WRF run is successful.")
             with open(args.setup, "w") as f:
                 new_submit_count = submit_count + 1
