@@ -242,7 +242,7 @@ if __name__ == "__main__":
         
         print("Check if target file exists: ")
         for i, target_file in enumerate(target_files):
-            print("[%d] %s" % (i, str(target_file), ))
+            print("[%d] %s => " % (i+1, str(target_file), ), files_exist[i])
         
         if np.all(files_exist):
             print("Yes. WRF run is successful.")

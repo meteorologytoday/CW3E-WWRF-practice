@@ -134,7 +134,8 @@ if __name__ == "__main__":
                 resubmit_interval_hr = case_setup["resubmit_interval_hr"],
                 input_nml = "namelist.input.original", 
                 output_nml = "namelist.input",
-                submit_file = "submit.sh", 
+                submit_file = "submit.sh",
+                wrfout_suffix = "_temp", 
             ), f)
         
         submit_engine = template_dir / "submit_engine.py"

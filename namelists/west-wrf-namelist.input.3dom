@@ -36,6 +36,9 @@
 ! iofields_filename                   = "aux_var_file_d01.txt", "aux_var_file_d02.txt", "aux_var_file_d03.txt",
 ! nocolons                            = .true.,
  debug_level                         = 0
+ auxinput4_inname                    = "wrflowinp_d<domain>",
+ auxinput4_interval                  = __SST_UPDATE_INTERVAL_MIN__,
+ io_form_auxinput4 = 2,
  /
 
  &domains
@@ -99,6 +102,7 @@
  sf_urban_physics                    = 0,     0,   0,
  do_radar_ref                        = 1,
  prec_acc_dt                         = 60.,   60.,  60.
+ sst_update                          = 1,
  /
 
  &noah_mp

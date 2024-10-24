@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
             METGRID_LEVS=case_setup["grid"]["METGRID_LEVS"],
             
-            BDY_INTERVAL_SECONDS = case_setup["bdy"]["BDY_INTERVAL_SECONDS"],
+            BDY_INTERVAL_SECONDS = (BDY_INTERVAL_SECONDS := case_setup["bdy"]["BDY_INTERVAL_SECONDS"]),
 
             NPROC_X=case_setup["grid"]["NPROC_X"],
             NPROC_Y=case_setup["grid"]["NPROC_Y"],
@@ -138,7 +138,8 @@ if __name__ == "__main__":
             NIO_GROUPS=1,
 
             IO_FORM=2, # netcdf
-               
+
+            SST_UPDATE_INTERVAL_MIN = int(BDY_INTERVAL_SECONDS / 60), 
         )
 
 

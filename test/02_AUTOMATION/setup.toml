@@ -10,7 +10,7 @@ restart_interval_min = 7200
 
 [caserun]
 caserun_label = "PRELIMINARY"
-caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/0.16deg/runs"
+caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/0.16deg/runs_updatesst"
 bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/0.16deg/bdy"
 caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
 
