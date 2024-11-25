@@ -19,7 +19,7 @@ caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
 [SST_perturbation]
 raw_mon_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/data/sst.mon.mean.nc"
 clim_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/gendata/clim_sst.nc"
-pattern_file = "/home/t2hsu/projects/CW3E-WWRF-practice/test/12_CaseStudy2023Jan_GEFS_MUR/diff_20190101.nc"
+pattern_file = "/home/t2hsu/projects/CW3E-WWRF-practice/test/12_CaseStudy2023Jan_GEFS_MUR/diff_20230101.nc"
 pert_amps  = [-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 pert_pats  = [ 0 ]
 

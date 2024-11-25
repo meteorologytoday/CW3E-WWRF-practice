@@ -73,7 +73,7 @@ for prefix in rsl wrfinput wrfout wrfrst ; do
     echo "Copying file group: $prefix"
     output_dir=$copy_to_dir/output/$prefix
     mkdir -p $output_dir
-    for filename in $( ls | grep $prefix ) do
+    for filename in $( ls | grep $prefix ) ; do
         if [ -L "$filename" ]; then
             echo "File $filename is a soft link. Skip it. "
             continue
