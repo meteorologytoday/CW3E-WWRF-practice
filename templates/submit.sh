@@ -73,7 +73,13 @@ for prefix in rsl wrfinput wrfout wrfrst ; do
     echo "Copying file group: $prefix"
     output_dir=$copy_to_dir/output/$prefix
     mkdir -p $output_dir
-    ls | grep $prefix | xargs -I % cp --verbose % -t $output_dir
+    for filename in $( ls | grep $prefix ) do
+        if [ -L "$filename" ]; then
+            echo "File $filename is a soft link. Skip it. "
+            continue
+        fi
+        cp --verbose $filename $output_dir/
+    done
 
 done
 
@@ -94,3 +100,4 @@ fi
 echo "Try submitting."
 python3 submit_engine.py --submit
 
+echo "End of file 'submit.sh'."
