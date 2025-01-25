@@ -9,10 +9,9 @@ import subprocess, shlex
 import os,shutil,glob
 from pathlib import Path
 
-import clim_tools
-import EOF_tools
-import gen_SST_tools
 import substitution_tools
+
+script_dir = Path(os.path.dirname(__file__))
 
 def pleaseRun(cmds, cwd=None):
 
@@ -56,27 +55,18 @@ if __name__ == "__main__":
     case_setup = toml.load(args.setup)
     start_time = pd.Timestamp(case_setup["start_time"])
     end_time = pd.Timestamp(case_setup["end_time"])
-    bdy_data_dir = Path(case_setup["caserun"]["individual_bdy_data_dir"])
- 
-    pert_configs = [
-        dict(
-            pats = case_setup["SST_perturbation"]["pert_pats"],
-            amps = case_setup["SST_perturbation"]["pert_amps"],
-        )
-    ]
-    flattened_pert_configs = []
-    for pert_config in pert_configs:
-        for pat in pert_config["pats"]:
-            for amp in pert_config["amps"]:
-                flattened_pert_configs.append(
-                    dict(
-                        pat=pat,
-                        amp=amp,
-                    )
-                )
+    caserun_root = Path(case_setup["caserun"]["caserun_root"])
+    #bdy_data_dir = Path(case_setup["caserun"]["individual_bdy_data_dir"])
+    ensemble_members = case_setup["ensemble"]["ensemble_members"]
+    bdy_root =  caserun_root / "bdy"
 
-    # For each case                
     
+    configs = []
+    for i in range(ensemble_members):
+        configs.append(
+            dict(ens_id=i),
+        )
+
     caserun_root = Path(case_setup["caserun"]["caserun_root"])
     caserun_scaffold = Path(case_setup["caserun"]["caserun_scaffold"])
     print("Generating case caserun dirs.")
@@ -88,27 +78,20 @@ if __name__ == "__main__":
    
     caserun_root.mkdir(exist_ok=True, parents=True)
     
-    for i, pert_config in enumerate(flattened_pert_configs): 
+    for i, config in enumerate(configs):
         
         print("##### Doing the case %d ##### " % (i,))
-        pat = pert_config["pat"]
-        amp = pert_config["amp"]
 
+        ens_id = config["ens_id"]
+        ens_label = f"ens{ens_id:02d}"
 
-
-        pert_label = "PAT{pat:d}_AMP{amp:.1f}".format(
-            pat = pat,
-            amp = amp,
+        casename = "{case_label:s}_{ens_label:s}".format(
+            case_label = case_setup["caserun"]["caserun_label"],
+            ens_label = ens_label,
         )
 
-        casename = "{label:s}_{pert_label:s}".format(
-            label = case_setup["caserun"]["caserun_label"],
-            pert_label = pert_label,
-        )
-
-        caserun_fullpath = caserun_root / casename
-        pert_file_dir = bdy_data_dir / pert_label
-
+        caserun_fullpath = caserun_root / "runs" / casename
+        bdy_data_dir = caserun_root / "bdy" / f"{ens_id:02d}"
 
         print("Generating case {casename:s} under {caserun_root:s}.".format(
             casename = casename,
@@ -119,7 +102,7 @@ if __name__ == "__main__":
             print("Error: Directory %s already exists. " % (str(caserun_fullpath),))
             continue
 
-        caserun_fullpath.mkdir(exist_ok=True)
+        caserun_fullpath.mkdir(parents=True, exist_ok=True)
         
         template_dir = Path(args.template_dir)
 
@@ -143,15 +126,16 @@ if __name__ == "__main__":
         shutil.copyfile(submit_engine, caserun_fullpath / submit_engine.name)
         
  
-        print("Making softlinks of boundary files in %s" % (str(pert_file_dir),))
-        for fileobj in pert_file_dir.glob("met_em*.nc"):
+        print("Making softlinks of boundary files in %s" % (str(bdy_data_dir),))
+        for fileobj in bdy_data_dir.glob("met_em*.nc"):
             print("Making softlink for file: ", str(fileobj))
             (caserun_fullpath / fileobj.name).symlink_to(fileobj)
         
 
         namelist_WRF = caserun_fullpath / "namelist.input.original"
         print("Making namelist: ", str(namelist_WRF)) 
-        pleaseRun("python3 generate_namelist.py --setup={setup:s} --program=WRF --output={output:s} --verbose".format(
+        pleaseRun("python3 {src_dir:s}/generate_namelist.py --setup={setup:s} --program=WRF --output={output:s} --verbose".format(
+            src_dir = str( script_dir / ".."), 
             setup  = args.setup,
             output = str(namelist_WRF), 
         )) 

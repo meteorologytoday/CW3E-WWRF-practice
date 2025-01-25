@@ -54,10 +54,10 @@ if __name__ == "__main__":
     case_setup = toml.load(args.setup)
     start_time = pd.Timestamp(case_setup["start_time"])
     end_time = pd.Timestamp(case_setup["end_time"])
-    bdy_data_dir = case_setup["caserun"]["bdy_data_dir"]
+    shared_bdy_data_dir = case_setup["caserun"]["shared_bdy_data_dir"]
  
-    print("Boundary data dir: ", bdy_data_dir)
-    Path(bdy_data_dir).mkdir(exist_ok=True, parents=True)
+    print("Shared boundary data dir: ", shared_bdy_data_dir)
+    Path(shared_bdy_data_dir).mkdir(exist_ok=True, parents=True)
 
     ## Part 1
     
@@ -96,10 +96,10 @@ if __name__ == "__main__":
     if len(copy_files) == 0:
         raise Exception("Cannot find any boundary files!")
     else:
-        print("Copying bdy files to directory %s" % (bdy_data_dir,))
+        print("Copying bdy files to directory %s" % (shared_bdy_data_dir,))
         for filename in copy_files:
                 from_filename = os.path.join(case_setup["WPS_DIR"], filename)
-                to_filename = os.path.join(bdy_data_dir, filename)
+                to_filename = os.path.join(shared_bdy_data_dir, filename)
                 
                 print("Copy file: %s" % (filename,))
                 shutil.copyfile(from_filename, to_filename)

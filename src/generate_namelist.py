@@ -79,6 +79,7 @@ if __name__ == "__main__":
             DY1_DEG=case_setup["grid"]["DY"],
             BDY_INTERVAL_SECONDS = case_setup["bdy"]["BDY_INTERVAL_SECONDS"],
             PREFIX="ERA5",
+
         )
    
 
@@ -140,6 +141,10 @@ if __name__ == "__main__":
             IO_FORM=2, # netcdf
 
             SST_UPDATE_INTERVAL_MIN = int(BDY_INTERVAL_SECONDS / 60), 
+
+            SSTUPDATE = case_setup["SST"]["SSTUPDATE"],
+            SSTSKIN = case_setup["SST"]["SSTSKIN"],
+
         )
 
 
