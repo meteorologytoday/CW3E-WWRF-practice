@@ -41,6 +41,7 @@ def work(details):
     wps_output_file = WPS_TMP_DIR / "namelist.wps"
     source_boundary_data_dirs = details["source_boundary_data_dirs"] 
     final_boundary_data_dir = Path(details["final_boundary_data_dir"]) 
+    setup_file = Path(details["setup_file"])
 
     results = dict(details = details, status="UNKNOWN") 
 
@@ -50,15 +51,15 @@ def work(details):
         final_boundary_data_dir.mkdir(parents=True, exist_ok=True)
 
         print("Making %s" % (wps_output_file,))       
-        pleaseRun("python3 {src_dir:s}/generate_namelist.py --program WPS --setup setup.toml --output {wpsoutput:s}".format(
+        pleaseRun("python3 {src_dir:s}/generate_namelist.py --program WPS --setup {setup_file:s} --output {wpsoutput:s}".format(
             src_dir = str( script_dir / ".." ),
             wpsoutput = str(wps_output_file),
+            setup_file = str(setup_file),
         ))
  
         print("Making soft links...")       
-        pleaseRun(f"ln -s %s/ungrib/Variable_Tables/Vtable.GFSENS %s/Vtable" % (WPS_TMP_DIR, WPS_TMP_DIR,))
         create_soft_links(WPS_DIR, WPS_TMP_DIR, skip_if_exists=True) 
-
+        pleaseRun(f"ln -s %s/ungrib/Variable_Tables/Vtable.GFSENS %s/Vtable" % (WPS_TMP_DIR, WPS_TMP_DIR,))
        
         # Run WPS
         geogrid_file = WPS_TMP_DIR / "geo_em.d01.nc"
@@ -66,7 +67,8 @@ def work(details):
             print("The geogrid file `%s` already exists. Remove it." % (geogrid_file,))
             geogrid_file.unlink()
 
-        pleaseRun("%s" % ( str(WPS_TMP_DIR / "geogrid.exe"), ), cwd=str(WPS_TMP_DIR))
+        pleaseRun(str(WPS_TMP_DIR / "geogrid.exe"), cwd=str(WPS_TMP_DIR))
+
         pleaseRun("%s %s" % (
             str(WPS_TMP_DIR / "link_grib.csh"),
             " ".join(["%s/" % (source_boundary_data_dir,) for source_boundary_data_dir in source_boundary_data_dirs ]),
@@ -143,8 +145,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='This high-level program oversees the entire process from downloading data, generating boundary files, adding perturbations to generating cases.')
     parser.add_argument('--setup', type=str, help='Setup TOML file.', required=True)
     parser.add_argument('--nproc', type=int, help='If we are using multi-processors.', default=1)
-    parser.add_argument('--ens-id', type=int, help='Ens id.', required=True)
-    parser.add_argument('--workflow', type=str, help='The steps', required=True)
+    parser.add_argument('--specify-ens-id', type=int, help='Used to do only one known case.', default=None)
 
     args = parser.parse_args()
 
@@ -154,7 +155,7 @@ if __name__ == "__main__":
     start_time = pd.Timestamp(case_setup["start_time"])
     end_time = pd.Timestamp(case_setup["end_time"])
 
-    #ensemble_members = case_setup["ensemble"]["ensemble_members"]
+    ensemble_members = case_setup["ensemble"]["ensemble_members"]
  
     WPS_DIR =  Path(case_setup["WPS_DIR"])
     WPS_TMP_ROOT =  Path(case_setup["WPS_TMP_ROOT"])
@@ -163,26 +164,63 @@ if __name__ == "__main__":
     bdy_root =  caserun_root / "bdy"
 
 
+    if args.specify_ens_id is not None:
+        
+        ens_ids = [args.specify_ens_id, ]
+
+    else:
+        ens_ids = list(range(ensemble_members))
+       
+
+    print("ens_ids: ", ens_ids) 
+        
+
     #if WPS_TMP_ROOT.exists():
     #    raise Exception(f"WPS_TMP_ROOT `{WPS_TMP_ROOT}` exists.")
 
-    ens_id = args.ens_id
-    member_label = "c00" if ens_id == 0 else f"p{ens_id:02d}"
+    input_args = []
+    for i, ens_id in enumerate(ens_ids):
+            
+        member_label = "c00" if ens_id == 0 else f"p{ens_id:02d}"
 
-    final_boundary_data_dir = bdy_root / f"{ens_id:02d}"
-    input_boundary_dir = Path(case_setup["caserun"]["input_boundary_dir"])
-    source_boundary_data_dirs = [
-        input_boundary_dir / member_label / "atmos",
-    ] 
+        final_boundary_data_dir = bdy_root / f"{ens_id:02d}"
+        input_boundary_dir = Path(case_setup["caserun"]["input_boundary_dir"])
+        source_boundary_data_dirs = [
+            input_boundary_dir / member_label / "atmos",
+        ] 
 
-    details = dict(
-        WPS_DIR = WPS_DIR,
-        WPS_TMP_DIR = WPS_TMP_ROOT / f"{ens_id:02d}",
-        source_boundary_data_dirs = source_boundary_data_dirs,
-        final_boundary_data_dir = final_boundary_data_dir,
-        label = member_label,
-    )
+        details = dict(
+            WPS_DIR = WPS_DIR,
+            WPS_TMP_DIR = WPS_TMP_ROOT / f"{ens_id:02d}",
+            source_boundary_data_dirs = source_boundary_data_dirs,
+            final_boundary_data_dir = final_boundary_data_dir,
+            label = member_label,
+            setup_file = args.setup,
+        )
+
+
+        input_args.append((details,))
+
+
+
+
+    failed_labels = []
+    with Pool(processes=args.nproc) as pool:
+
+        results = pool.starmap(work, input_args)
+
+        for i, result in enumerate(results):
+            if result['status'] != 'OK':
+                print('!!! Failed to generate output : %s.' % (result["details"]['label'],))
+                failed_labels.append(result["details"]['label'],)
+
+
+        print("Tasks finished.")
+
+        print("Failed files: ")
+        for i, failed_label in enumerate(failed_labels):
+            print("%d : %s" % (i+1, failed_label,))
         
-    work(details)
+
 
         

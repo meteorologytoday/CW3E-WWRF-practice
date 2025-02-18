@@ -4,7 +4,7 @@ import argparse
 import toml
 import re
 import pprint
-
+from pathlib import Path
 def searchSubstitution(s, verbose = True):
         
     matches = re.findall(r"__[a-zA-Z_0-9]+__", s)
@@ -174,8 +174,14 @@ if __name__ == "__main__":
     
 
     if args.output != "":
-        print("Write to file: ", args.output)
-        with open(args.output, "w") as f:
+
+        output_file = Path(args.output)
+        if output_file.exists():
+            print("Remove pre-existing file: ", str(output_file))
+            Path.unlink(missing_ok=False) 
+
+        print("Write to file: ", str(output_file))
+        with open(output_file, "w") as f:
             f.write(namelist_file_content)
 
 

@@ -46,6 +46,7 @@ if __name__ == "__main__":
     parser.add_argument('--setup', type=str, help='Setup TOML file.', required=True)
     parser.add_argument('--template-dir', type=str, help='Submit file template.', default="/home/t2hsu/projects/CW3E-WWRF-practice/templates")
     parser.add_argument('--overwrite', action="store_true")
+    parser.add_argument('--subgroups', type=str, nargs="*", default=[""])
     parser.add_argument('--use-symbolic', action="store_true")
 
     args = parser.parse_args()
@@ -56,16 +57,25 @@ if __name__ == "__main__":
     start_time = pd.Timestamp(case_setup["start_time"])
     end_time = pd.Timestamp(case_setup["end_time"])
     caserun_root = Path(case_setup["caserun"]["caserun_root"])
-    #bdy_data_dir = Path(case_setup["caserun"]["individual_bdy_data_dir"])
     ensemble_members = case_setup["ensemble"]["ensemble_members"]
-    bdy_root =  caserun_root / "bdy"
-
     
+    if "bdy_data_root" in case_setup["caserun"]:
+        bdy_data_root   = Path(case_setup["caserun"]["bdy_data_root"])
+    else:
+        bdy_data_root = caserun_root / "bdy"
+        print("Option `bdy_data_root` does not exist. Assume it is under the `caserun_root`. ")
+        print("Set `bdy_data_root` = %s" % (bdy_data_root,))
+
     configs = []
-    for i in range(ensemble_members):
-        configs.append(
-            dict(ens_id=i),
-        )
+
+    for subgroup in args.subgroups:
+        for i in range(ensemble_members):
+            configs.append(
+                dict(
+                    ens_id = i,
+                    subgroup = subgroup,
+                ),
+            )
 
     caserun_root = Path(case_setup["caserun"]["caserun_root"])
     caserun_scaffold = Path(case_setup["caserun"]["caserun_scaffold"])
@@ -84,20 +94,22 @@ if __name__ == "__main__":
 
         ens_id = config["ens_id"]
         ens_label = f"ens{ens_id:02d}"
-
-        casename = "{case_label:s}_{ens_label:s}".format(
+        subgroup = config["subgroup"]
+        
+        casename = "{case_label:s}{subgroup_label:s}_{ens_label:s}".format(
             case_label = case_setup["caserun"]["caserun_label"],
             ens_label = ens_label,
+            subgroup_label = f"_{subgroup:s}" if subgroup != "" else "",
         )
-
-        caserun_fullpath = caserun_root / "runs" / casename
-        bdy_data_dir = caserun_root / "bdy" / f"{ens_id:02d}"
-
+        
+        caserun_fullpath = caserun_root / "runs" / subgroup / casename
+        bdy_data_dir = bdy_data_root / subgroup / f"{ens_id:02d}"
+            
         print("Generating case {casename:s} under {caserun_root:s}.".format(
             casename = casename,
             caserun_root = str(caserun_root),
         ))
-
+        
         if (not args.overwrite) and caserun_fullpath.exists():
             print("Error: Directory %s already exists. " % (str(caserun_fullpath),))
             continue
@@ -155,8 +167,9 @@ if __name__ == "__main__":
             submit_file_content,
             dict(
                 PARTITION = "cw3e-compute",
-                NODES = 1,
-                NPROC = 128,
+                NODES                = case_setup['grid']["NODES"],
+                NPROC_PER_NODE       = case_setup['grid']["NPROC_PER_NODE"],
+                NPROC_PER_ATM_MODEL  = case_setup['grid']["NPROC_PER_ATM_MODEL"],
                 JOBNAME = casename,
             )
         )

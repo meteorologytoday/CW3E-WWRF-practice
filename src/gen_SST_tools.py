@@ -39,6 +39,7 @@ def addSSTPerturbation(
     end_dt,
     data_interval,
     cmb,  # clim_tools.climMagicBox
+    SST_varname = "SST",
     frames_per_file = 1,
     input_prefix = "met_em.d01.",
     input_suffix = ".nc",
@@ -58,7 +59,8 @@ def addSSTPerturbation(
     ds_init_SST = loadXarrayIfStr(init_SST)
     da_pert_SST = loadXarrayIfStr(pert_SST, varname="pert_SST")
 
-    new_SST_base = ds_init_SST["SST"].to_numpy()
+    new_SST_base = ds_init_SST[SST_varname].to_numpy()
+    landsea_mask = ds_init_SST["LANDSEA"].to_numpy()
 
 
     lat = ds_init_SST["XLAT_M"].to_numpy()[0, :, 0]
@@ -96,10 +98,9 @@ def addSSTPerturbation(
 
         # Important: Use ds_init_SST
         new_SST = new_SST_base.copy()
-        lnd_mask = new_SST == 0
+        lnd_mask = landsea_mask == 1
         ocn_mask = np.logical_not(lnd_mask)
-       
-
+        
         #print("sum of lnd_mask: ", np.sum(lnd_mask))
  
         nan_idx_in_both_clim_ocn = np.logical_and(nan_idx_in_clim, ocn_mask)
@@ -109,13 +110,12 @@ def addSSTPerturbation(
             print("There are %d points cannot find its climatology values. The trend at these points will be assigned as 0." % (np.sum(nan_idx_in_both_clim_ocn),))
         
         clim_SST_diff[nan_idx_in_clim] = 0
-    
         new_SST += da_pert_SST.to_numpy() + clim_SST_diff
        
         # Clear land values 
-        new_SST[lnd_mask] = 0.0
+        new_SST[lnd_mask] = new_SST_base[lnd_mask] 
 
-        ds["SST"][:, :, :] = new_SST
+        ds[SST_varname][:, :, :] = new_SST
 
         print("Output to file: ", output_full_filename)     
         ds.to_netcdf(
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     output_timelen  = pd.Timedelta(hours=args.output_hours)
     output_interval = pd.Timedelta(hours=args.output_interval)
     
-    N = output_timelen / output_interval
+    N = output_timelen / output_interval + 1
 
     if N % 1 != 0:
         print("Warning: The time `--output-hours` is not a multiple of `--output-interval`.")
