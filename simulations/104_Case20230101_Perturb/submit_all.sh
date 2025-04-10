@@ -11,42 +11,16 @@ for subgroup in "${subgroups[@]}" ; do
         
         cd $runs_dir/$casedir
 
-        cp $HOME/projects/CW3E-WWRF-practice/templates/submit_engine.py .
+        #cp $HOME/projects/CW3E-WWRF-practice/templates/submit_engine.py .
 
-        #if [[ "$casedir" =~ "ens19" ]] ; then
-        #    continue
-        #fi
- 
-        #if [[ "$casedir" =~ "ens21" ]] ; then
-        #    continue
-        #fi
- 
         #if [[ "$casedir" =~ "ens22" ]] ; then
         #    continue
         #fi
      
-        #cd $caserun_root/$casedir
-       
-
-        #check_results_before=0
-        #python3 submit_engine.py --check-output &> /dev/null
-        #check_results=$?
-
-        echo "Msg: $check_results_before => $check_results"
-
-        if [ "$check_results" = "0" ]; then
-            echo "[$casedir] $file_check exists."
-        else
-            echo "[$casedir] $file_check not found."
-            
-            python3 submit_engine.py --unlock-forced
-            python3 submit_engine.py --submit
-        fi
+        python3 submit_engine.py --unlock
+        python3 submit_engine.py --submit
 
         cd $cwd
-
-
-
 
     done
 done 

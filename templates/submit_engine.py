@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     if args.unlock:
 
-        print("The option `--unlock` is flagged. Remove lock file: ", args.lock_file)
+        print("The option `--unlock` is flagged. Test if lock file can be removed: ", args.lock_file)
         lock_file = Path(args.lock_file)
 
         if lock_file.exists():
@@ -136,7 +136,7 @@ if __name__ == "__main__":
             else:
                 is_queued = False
                 for result in test_result:
-                    job_id = extractJobID(test_result[1])
+                    job_id = extractJobID(result)
                     if job_id is not None:
                         is_queued = True
 
