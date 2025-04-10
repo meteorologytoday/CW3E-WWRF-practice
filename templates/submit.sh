@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -p __PARTITION__
 #SBATCH --nodes=__NODES__
-#SBATCH --ntasks-per-node=__NPROC__
+#SBATCH --ntasks-per-node=__NPROC_PER_NODE__
 #SBATCH --cpus-per-task=1
 #SBATCH -t 50:00:00
 #SBATCH -J __JOBNAME__
@@ -53,7 +53,7 @@ done
 
 
 echo "Running run_wrf.sh"
-bash run_wrf.sh __NPROC__ &> $log_file &
+bash run_wrf.sh __NPROC_PER_ATM_MODEL__ &> $log_file &
 
 PID=$!
 echo "WRF pid = $PID"

@@ -178,7 +178,7 @@ if __name__ == "__main__":
         output_file = Path(args.output)
         if output_file.exists():
             print("Remove pre-existing file: ", str(output_file))
-            Path.unlink(missing_ok=False) 
+            output_file.unlink(missing_ok=False) 
 
         print("Write to file: ", str(output_file))
         with open(output_file, "w") as f:

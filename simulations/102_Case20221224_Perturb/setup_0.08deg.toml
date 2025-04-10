@@ -1,0 +1,60 @@
+WPS_DIR = "/home/t2hsu/models/WRF_gcc/WPS-4.5"
+WPS_TMP_ROOT = "/home/t2hsu/temp_project/WPS_TMP_101_Case20221224"
+data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/"
+
+start_time = "2022-12-24T00:00:00"
+end_time = "2023-01-03T00:00:00"
+resubmit_interval_hr = 120 
+restart_interval_min = 7200
+
+[caserun]
+caserun_label    = "Perturb1"
+caserun_root     = "/expanse/lustre/scratch/t2hsu/temp_project/CW3E_WRF_RUNS/0.08deg/exp_20221224_Perturb1"
+caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
+input_boundary_dir = "/expanse/lustre/scratch/t2hsu/temp_project/GEFS_data/GEFSv12/gefs.20221224/00/"
+
+[SST_perturbation]
+raw_mon_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/data/sst.mon.mean.nc"
+clim_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/gendata/clim_sst.nc"
+original_bdy_data_root = "/expanse/lustre/scratch/t2hsu/temp_project/CW3E_WRF_RUNS/0.08deg/exp_20221224/bdy"
+pattern_file = "/home/t2hsu/projects/CW3E-WWRF-practice/simulations/102_Case20221224_Perturb/SST_forcing/SST_forcing_GHRSST-Mean_minus_oisst_2022P70.nc"
+pert_amps  = [-1.0,]
+pert_pats  = [0,]
+
+
+
+
+[ensemble]
+ensemble_members = 31
+
+[grid]
+NZ = 100
+NX = 828
+NY = 570
+DX = 0.08
+DY = 0.08
+DX_PHY = 8894.198
+DY_PHY = 8894.198
+
+NPROC_X = 16
+NPROC_Y = 8
+METGRID_LEVS = 32
+
+NODES               = 1
+NPROC_PER_NODE      = 128
+NPROC_PER_ATM_MODEL = 128
+
+
+[bdy]
+BDY_INTERVAL_SECONDS = 10800
+
+[WRF]
+HISTORY_INTERVAL = 360 # minutes
+
+
+[WPS]
+Vtable = "ungrib/Variable_Tables/Vtable.ECMWF"
+
+[SST]
+SSTUPDATE = 0
+SSTSKIN   = 0

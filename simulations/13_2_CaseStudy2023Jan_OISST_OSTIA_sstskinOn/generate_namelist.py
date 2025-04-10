@@ -1,0 +1,1 @@
+../13_CaseStudy2023Jan_OISST_OSTIA/generate_namelist.py

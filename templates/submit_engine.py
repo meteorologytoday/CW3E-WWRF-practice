@@ -8,6 +8,26 @@ import pprint
 import numpy as np
 import shlex, subprocess, shutil
 import sys
+import re
+
+def extractJobID(msg):
+
+    pattern = r'\b\d{8}\b'
+    matches = re.findall(pattern, msg)
+
+    result = matches
+
+    if len(matches) == 0:
+        print("Warning: Cannot find a job id")
+        result = None
+    elif len(matches) > 1:
+        print("Warning: More than one Job ID found: ", matches, ". Only going to return the first one.")
+        result = matches[0]
+    else:
+        result = matches[0]
+        
+    return result
+
 
 def exitIfLocked(lock_file):
     lock_file = Path(lock_file)
@@ -19,11 +39,13 @@ def exitIfLocked(lock_file):
 
 def pleaseRun(cmds, cwd=None, store_output=False):
 
+    unpack = False
     if isinstance(cmds, str):
         cmds = [cmds,]
+        unpack = True
 
     output = [] if store_output else None
-
+    returncodes = []
     for cmd in cmds:
 
         if store_output:
@@ -33,7 +55,7 @@ def pleaseRun(cmds, cwd=None, store_output=False):
         print(">> ", cmd)
 
         #subprocess.run(cmd_split)
-
+        returncode = None
         with subprocess.Popen(
             cmd_split,
             stdout=subprocess.PIPE,
@@ -52,11 +74,17 @@ def pleaseRun(cmds, cwd=None, store_output=False):
                     cmd_output.append(line)
 
             p.wait()
+            
+            returncodes.append(p.returncode)
 
         if store_output:
             output.append(cmd_output)
 
-    return output
+    if unpack == True:
+        returncodes = returncodes[0]
+        output = output[0]
+
+    return returncodes, output
 
 if __name__ == "__main__":
     
@@ -64,7 +92,8 @@ if __name__ == "__main__":
     parser.add_argument('--setup', type=str, help='Input TOML setup file containing start_time and end_time.', default="submit_detail.toml")
     parser.add_argument('--lock-file', type=str, help='A lock file to prevent multiple submission.', default="submit.lock")
     
-    parser.add_argument('--unlock', action="store_true", help='Remove lock file')
+    parser.add_argument('--unlock-forced', action="store_true", help='Remove lock file')
+    parser.add_argument('--unlock', action="store_true", help='Remove lock file if job is not running')
     parser.add_argument('--reset-submit-count', action="store_true", help='Reset the submit count to zero')
     parser.add_argument('--fake-submit', action="store_true")
     parser.add_argument('--submit', action="store_true")
@@ -75,16 +104,133 @@ if __name__ == "__main__":
     
     setup = toml.load(args.setup)
 
-    if args.unlock:
-        print("The option `--unlock` is flagged. Remove lock file: ", args.lock_file)
+    if args.unlock_forced:
+        print("The option `--unlock-forced` is flagged. Remove lock file: ", args.lock_file)
         lock_file = Path(args.lock_file)
         
         if lock_file.exists():
             lock_file.unlink()
         
         sys.exit(0)
-         
+
+    if args.unlock:
+
+        print("The option `--unlock` is flagged. Remove lock file: ", args.lock_file)
+        lock_file = Path(args.lock_file)
+
+        if lock_file.exists():
     
+            submitted_info = toml.load(lock_file)
+
+            if "job_id" not in submitted_info:
+                
+                print("Error: Lock file exists but cannot find `job_id`.")
+                sys.exit(1)
+
+            cmd = "squeue --job %s" % (submitted_info["job_id"],)
+            rc, test_result = pleaseRun(cmd, store_output=True)
+           
+            is_queued = None
+            if rc != 0:
+                is_queued = False
+            else:
+                is_queued = False
+                for result in test_result:
+                    job_id = extractJobID(test_result[1])
+                    if job_id is not None:
+                        is_queued = True
+
+            if is_queued:
+                print("Cannot unlock because the associated job %s is in the queue." % (submitted_info["job_id"],))
+            else:
+                print("Lock file exists, but the associated job %s is not in the queue." % (submitted_info["job_id"],))
+            
+                print("Remove lock file ", str(lock_file))
+                lock_file.unlink()
+
+        sys.exit(0)
+           
+    if args.check_output:
+        
+        print("The option `--check-output` is flagged.")
+        
+        start_time = pd.Timestamp(setup["start_time"])
+        end_time = pd.Timestamp(setup["end_time"])
+        resubmit_interval = pd.Timedelta(hours=setup["resubmit_interval_hr"])
+        submit_count = setup['submit_count']
+        
+        submit_count_max = (end_time - start_time) / resubmit_interval
+
+        # If it is not an integer, that means the alst restart file
+        # will not be produced. We can only check the wrfout file. 
+        has_last_wrfrst = submit_count_max % 1 == 0 
+        
+        submit_count_max = int(np.ceil(submit_count_max))
+
+        if submit_count == submit_count_max:
+            print("Resubmit max reached, the runs are all done! There is no need to resubmit.")
+            sys.exit(0)
+ 
+
+
+        last_submit = submit_count == submit_count_max - 1
+       
+
+        new_start_time = start_time + submit_count * resubmit_interval
+        new_end_time = new_start_time + resubmit_interval
+
+        if new_end_time > end_time:
+            new_end_time = end_time
+ 
+
+       
+        wrfrst_file = Path(".") / "output" / "wrfrst" / "wrfrst_d01_{timestr:s}".format(
+            timestr = new_end_time.strftime("%Y-%m-%d_%H:%M:%S")
+        )
+
+        wrfout_file = Path(".") / "output" / "wrfout" / "wrfout_d01_{timestr:s}{suffix:s}".format(
+            timestr = new_end_time.strftime("%Y-%m-%d_%H:%M:%S"),
+            suffix = setup["wrfout_suffix"] if "wrfout_suffix" in setup else "",
+        )
+
+        target_files = []
+        target_files.append(wrfout_file)
+
+        if last_submit:
+            if has_last_wrfrst:
+                target_files.append(wrfrst_file)
+            else:
+                print("It won't have last restart file.")
+        else:
+            target_files.append(wrfrst_file)
+
+ 
+        # Check if target_files exist
+        files_exist = [ target_file.exists() for target_file in target_files ]
+        
+        print("Check if target file exists: ")
+        for i, target_file in enumerate(target_files):
+            print("[%d] %s => " % (i+1, str(target_file), ), files_exist[i])
+        
+        if np.all(files_exist):
+            print("Yes. WRF run is successful.")
+            with open(args.setup, "w") as f:
+                new_submit_count = submit_count + 1
+                print("Now increse submit count from %d => %d" % (submit_count, new_submit_count,))
+                setup["submit_count"] = new_submit_count
+                toml.dump(setup, f)
+
+            sys.exit(0)
+        else:
+            print("No. Warning: WRF run failed because I cannot find target file ", str(target_file))
+            print("Information: submit_count={submit_count:d}. Sim time = {start_time:s} ~ {end_time:s}".format(
+                submit_count = submit_count,
+                start_time = new_start_time.strftime("%Y-%m-%d_%H:%M:%S"),
+                end_time = new_end_time.strftime("%Y-%m-%d_%H:%M:%S"),
+            ))
+
+            sys.exit(1)
+   
     # Check lock file    
     exitIfLocked(args.lock_file)
 
@@ -167,13 +313,22 @@ if __name__ == "__main__":
             if args.fake_submit:
                 print("Fake submit >> ", cmd)
             else:
-                 submit_info = pleaseRun(cmd, store_output=True)
-            
+                rc, submit_info = pleaseRun(cmd, store_output=True)
+           
+                if rc != 0:
+                    raise Exception("Return code = %d. Submit seems to fail." % (rc,)) 
 
             with open(args.lock_file, "w") as f:
                 setup['submit_real_time'] = str(pd.Timestamp.now())
                 setup['submit_start_time'] = str(new_start_time)
                 setup['submit_end_time']   = str(new_end_time)
+
+                job_id = extractJobID(submit_info[0])
+                if job_id is None:
+                    print("Job id is not found")
+                    job_id = "UNKNOWN"
+
+                setup['job_id'] = job_id
 
                 if not args.fake_submit:
                     setup['submit_message'] = ",".join(submit_info[0])
@@ -182,86 +337,6 @@ if __name__ == "__main__":
 
             sys.exit(0)
  
-    elif args.check_output:
-        
-        print("The option `--check-output` is flagged.")
-        
-        start_time = pd.Timestamp(setup["start_time"])
-        end_time = pd.Timestamp(setup["end_time"])
-        resubmit_interval = pd.Timedelta(hours=setup["resubmit_interval_hr"])
-        submit_count = setup['submit_count']
-        
-        submit_count_max = (end_time - start_time) / resubmit_interval
-
-        # If it is not an integer, that means the alst restart file
-        # will not be produced. We can only check the wrfout file. 
-        has_last_wrfrst = submit_count_max % 1 == 0 
-        
-        submit_count_max = int(np.ceil(submit_count_max))
-
-        if submit_count == submit_count_max:
-            print("Resubmit max reached, the runs are all done! There is no need to resubmit.")
-            sys.exit(0)
- 
-
-
-        last_submit = submit_count == submit_count_max - 1
-       
-
-        new_start_time = start_time + submit_count * resubmit_interval
-        new_end_time = new_start_time + resubmit_interval
-
-        if new_end_time > end_time:
-            new_end_time = end_time
- 
-
-       
-        wrfrst_file = Path(".") / "output" / "wrfrst" / "wrfrst_d01_{timestr:s}".format(
-            timestr = new_end_time.strftime("%Y-%m-%d_%H:%M:%S")
-        )
-
-        wrfout_file = Path(".") / "output" / "wrfout" / "wrfout_d01_{timestr:s}{suffix:s}".format(
-            timestr = new_end_time.strftime("%Y-%m-%d_%H:%M:%S"),
-            suffix = setup["wrfout_suffix"] if "wrfout_suffix" in setup else "",
-        )
-
-        target_files = []
-        target_files.append(wrfout_file)
-
-        if last_submit:
-            if has_last_wrfrst:
-                target_files.append(wrfrst_file)
-            else:
-                print("It won't have last restart file.")
-        else:
-            target_files.append(wrfrst_file)
-
- 
-        # Check if target_files exist
-        files_exist = [ target_file.exists() for target_file in target_files ]
-        
-        print("Check if target file exists: ")
-        for i, target_file in enumerate(target_files):
-            print("[%d] %s => " % (i+1, str(target_file), ), files_exist[i])
-        
-        if np.all(files_exist):
-            print("Yes. WRF run is successful.")
-            with open(args.setup, "w") as f:
-                new_submit_count = submit_count + 1
-                print("Now increse submit count from %d => %d" % (submit_count, new_submit_count,))
-                setup["submit_count"] = new_submit_count
-                toml.dump(setup, f)
-
-            sys.exit(0)
-        else:
-            print("No. Warning: WRF run failed because I cannot find target file ", str(target_file))
-            print("Information: submit_count={submit_count:d}. Sim time = {start_time:s} ~ {end_time:s}".format(
-                submit_count = submit_count,
-                start_time = new_start_time.strftime("%Y-%m-%d_%H:%M:%S"),
-                end_time = new_end_time.strftime("%Y-%m-%d_%H:%M:%S"),
-            ))
-
-            sys.exit(1)
 
 
     else:

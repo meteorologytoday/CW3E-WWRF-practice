@@ -1,0 +1,1 @@
+../13_CaseStudy2023Jan_OISST_OSTIA/main_gencase_method2.py

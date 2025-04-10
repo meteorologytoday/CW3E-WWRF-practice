@@ -1,0 +1,62 @@
+
+
+WPS_DIR = "/home/t2hsu/models/WRF_gcc/WPS-4.5"
+data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/"
+
+start_time = "2023-01-01T00:00:00"
+end_time = "2023-01-18T00:00:00"
+resubmit_interval_hr = 120 
+restart_interval_min = 7200
+
+[caserun]
+caserun_label = "PRELIMINARY"
+caserun_root = "/expanse/lustre/scratch/t2hsu/temp_project/WRF_RUNS/0.16deg/runs_OISST_OSTIA_sstskinOFF"
+shared_bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/0.16deg/bdy"
+individual_bdy_data_dir = "/home/t2hsu/temp_project/WRF_RUNS/0.16deg/bdy_OISST_OSTIA"
+caserun_scaffold = "/home/t2hsu/models/WRF_gcc/WRFV4.6.1/run"
+
+
+[SST_perturbation]
+raw_mon_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/data/sst.mon.mean.nc"
+clim_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/gendata/clim_sst.nc"
+pattern_file = "/home/t2hsu/projects/CW3E-WWRF-practice/test/13_CaseStudy2023Jan_OISST_OSTIA/diff_2022P72.nc"
+pert_amps  = [-1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4]
+pert_pats  = [ 0 ]
+
+
+
+[grid]
+NZ = 100
+NX = 414
+NY = 285
+DX = 0.16
+DY = 0.16
+DX_PHY = 17788.396
+DY_PHY = 17788.396
+
+#NZ = 100
+#NX = 828
+#NY = 570
+#DX = 0.08
+#DY = 0.08
+#DX_PHY = 8894.198
+#DY_PHY = 8894.198
+
+NPROC_X = 16
+NPROC_Y = 8
+METGRID_LEVS = 8
+
+
+[bdy]
+BDY_INTERVAL_SECONDS = 10800
+
+[WRF]
+HISTORY_INTERVAL = 180 # minutes
+
+
+[WPS]
+Vtable = "ungrib/Variable_Tables/Vtable.ECMWF"
+
+[SST]
+SSTUPDATE = 1
+SSTSKIN   = 0

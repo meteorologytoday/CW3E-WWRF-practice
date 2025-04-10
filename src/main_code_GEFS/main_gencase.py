@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument('--setup', type=str, help='Setup TOML file.', required=True)
     parser.add_argument('--template-dir', type=str, help='Submit file template.', default="/home/t2hsu/projects/CW3E-WWRF-practice/templates")
     parser.add_argument('--overwrite', action="store_true")
-    parser.add_argument('--subgroups', type=str, nargs="*", default=[""])
+    parser.add_argument('--subgroups', type=str, nargs="+", required=True)
     parser.add_argument('--use-symbolic', action="store_true")
 
     args = parser.parse_args()
@@ -101,8 +101,8 @@ if __name__ == "__main__":
             ens_label = ens_label,
             subgroup_label = f"_{subgroup:s}" if subgroup != "" else "",
         )
-        
-        caserun_fullpath = caserun_root / "runs" / subgroup / casename
+ 
+        caserun_fullpath = caserun_root / "runs" / subgroup / f"{ens_id:02d}"
         bdy_data_dir = bdy_data_root / subgroup / f"{ens_id:02d}"
             
         print("Generating case {casename:s} under {caserun_root:s}.".format(

@@ -145,6 +145,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='This high-level program oversees the entire process from downloading data, generating boundary files, adding perturbations to generating cases.')
     parser.add_argument('--setup', type=str, help='Setup TOML file.', required=True)
     parser.add_argument('--nproc', type=int, help='If we are using multi-processors.', default=1)
+    parser.add_argument('--subgroup', type=str, help='If we are using multi-processors.', required=True)
     parser.add_argument('--specify-ens-id', type=int, help='Used to do only one known case.', default=None)
 
     args = parser.parse_args()
@@ -161,7 +162,7 @@ if __name__ == "__main__":
     WPS_TMP_ROOT =  Path(case_setup["WPS_TMP_ROOT"])
    
     caserun_root = Path(case_setup["caserun"]["caserun_root"])
-    bdy_root =  caserun_root / "bdy"
+    bdy_root =  caserun_root / "bdy" / args.subgroup
 
 
     if args.specify_ens_id is not None:

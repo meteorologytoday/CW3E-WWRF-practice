@@ -102,7 +102,8 @@
  sf_urban_physics                    = 0,     0,   0,
  do_radar_ref                        = 1,
  prec_acc_dt                         = 60.,   60.,  60.
- sst_update                          = 1,
+ sst_update                          = __SSTUPDATE__,
+ sst_skin                            = __SSTSKIN__,
  /
 
  &noah_mp
