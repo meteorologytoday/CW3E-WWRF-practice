@@ -86,7 +86,7 @@ done
 cd $SLURM_SUBMIT_DIR
 
 # Unlock
-python3 submit_engine.py --unlock
+python3 submit_engine.py --unlock-forced
 
 # Check
 python3 submit_engine.py --check-output
