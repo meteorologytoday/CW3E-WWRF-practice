@@ -4,7 +4,6 @@ output_root=/home/t2hsu/temp_project/PROCESSED_CW3E_WRF_RUNS/0.08deg
 input_root=/home/t2hsu/temp_project/CW3E_WRF_RUNS/0.08deg
 
 if [ ] ; then
-exp_name=exp_20221224
 
 shares=(
     Perturb1/runs/PAT00_AMP-1.0
@@ -13,12 +12,28 @@ shares=(
 )
 fi
 
-exp_name=exp_20230101
+if [ ] ; then
 
 shares=(
-    exp_20230101/runs/PAT00_AMP1.0
-    exp_20230101/runs/PAT00_AMP-1.0
 )
+fi
+
+shares=(
+
+
+    exp_20221224/runs/CTL
+    exp_20221224/runs/PAT00_AMP1.0
+    exp_20221224/runs/PAT00_AMP-1.0
+
+
+#    exp_20230107/runs/PAT00_AMP1.0
+#    exp_20230107/runs/PAT00_AMP-1.0
+
+    exp_20230101/runs/CTL
+#    exp_20230101/runs/PAT00_AMP1.0
+#    exp_20230101/runs/PAT00_AMP-1.0
+)
+
 
 for shared in "${shares[@]}"; do
     for casedir in $( ls $input_root/$shared ); do
@@ -39,7 +54,7 @@ for (( i=0; i< ${#input_dirs[@]} ; i++ )); do
         --input  $input_dir  \
         --output $output_dir \
         --check-policy varnames \
-        --nproc  2
+        --nproc  6
 
 done
 

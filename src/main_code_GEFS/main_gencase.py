@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument('--setup', type=str, help='Setup TOML file.', required=True)
     parser.add_argument('--template-dir', type=str, help='Submit file template.', default="/home/t2hsu/projects/CW3E-WWRF-practice/templates")
     parser.add_argument('--overwrite', action="store_true")
-    parser.add_argument('--subgroups', type=str, nargs="+", required=True)
+    parser.add_argument('--groups', type=str, nargs="+", required=True)
     parser.add_argument('--use-symbolic', action="store_true")
 
     args = parser.parse_args()
@@ -68,12 +68,12 @@ if __name__ == "__main__":
 
     configs = []
 
-    for subgroup in args.subgroups:
+    for group in args.groups:
         for i in range(ensemble_members):
             configs.append(
                 dict(
                     ens_id = i,
-                    subgroup = subgroup,
+                    group = group,
                 ),
             )
 
@@ -94,16 +94,16 @@ if __name__ == "__main__":
 
         ens_id = config["ens_id"]
         ens_label = f"ens{ens_id:02d}"
-        subgroup = config["subgroup"]
+        group = config["group"]
         
-        casename = "{case_label:s}{subgroup_label:s}_{ens_label:s}".format(
+        casename = "{case_label:s}{group_label:s}_{ens_label:s}".format(
             case_label = case_setup["caserun"]["caserun_label"],
             ens_label = ens_label,
-            subgroup_label = f"_{subgroup:s}" if subgroup != "" else "",
+            group_label = f"_{group:s}" if group != "" else "",
         )
  
-        caserun_fullpath = caserun_root / "runs" / subgroup / f"{ens_id:02d}"
-        bdy_data_dir = bdy_data_root / subgroup / f"{ens_id:02d}"
+        caserun_fullpath = caserun_root / "runs" / group / f"{ens_id:02d}"
+        bdy_data_dir = bdy_data_root / group / f"{ens_id:02d}"
             
         print("Generating case {casename:s} under {caserun_root:s}.".format(
             casename = casename,
