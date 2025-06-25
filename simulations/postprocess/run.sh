@@ -3,35 +3,29 @@
 output_root=/home/t2hsu/temp_project/PROCESSED_CW3E_WRF_RUNS/0.08deg
 input_root=/home/t2hsu/temp_project/CW3E_WRF_RUNS/0.08deg
 
-if [ ] ; then
-
-shares=(
-    Perturb1/runs/PAT00_AMP-1.0
-    Perturb1/runs/PAT00_AMP1.0
-    Baseline01/runs
-)
-fi
-
-if [ ] ; then
-
-shares=(
-)
-fi
-
 shares=(
 
 
-    exp_20221224/runs/CTL
-    exp_20221224/runs/PAT00_AMP1.0
-    exp_20221224/runs/PAT00_AMP-1.0
+#    exp_20221224/runs/CTL
+#    exp_20221224/runs/PAT00_AMP1.0
+#    exp_20221224/runs/PAT00_AMP-1.0
 
 
 #    exp_20230107/runs/PAT00_AMP1.0
 #    exp_20230107/runs/PAT00_AMP-1.0
 
-    exp_20230101/runs/CTL
+#    exp_20230101/runs/CTL
 #    exp_20230101/runs/PAT00_AMP1.0
 #    exp_20230101/runs/PAT00_AMP-1.0
+
+#    exp_20230107/runs/PAT00_AMP0.0
+#    exp_20230107/runs/PAT00_AMP2.0
+
+    exp_20230107/runs/PAT01_AMP4.0
+    exp_20230107/runs/PAT01_AMP2.0
+
+
+#    exp_20230107/runs/PAT00_AMP1.0
 )
 
 
@@ -56,6 +50,10 @@ for (( i=0; i< ${#input_dirs[@]} ; i++ )); do
         --check-policy varnames \
         --nproc  6
 
-done
+done 
+
+wait
+
+
 
 

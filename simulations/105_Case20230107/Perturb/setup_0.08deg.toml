@@ -3,7 +3,7 @@ WPS_TMP_ROOT = "/home/t2hsu/temp_project/WPS_TMP_103_Case20230107"
 data_dir = "/home/t2hsu/projects/CW3E-WWRF-practice/data/WRF_ERA5/"
 
 start_time = "2023-01-07T00:00:00"
-end_time = "2023-01-17T00:00:00"
+end_time = "2023-01-12T00:00:00"
 resubmit_interval_hr = 120 
 restart_interval_min = 7200
 
@@ -17,9 +17,14 @@ input_boundary_dir = "/expanse/lustre/scratch/t2hsu/temp_project/GEFS_data/GEFSv
 raw_mon_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/data/sst.mon.mean.nc"
 clim_SST_file = "/home/t2hsu/projects/CW3E-WWRF-practice/gendata/clim_sst.nc"
 original_bdy_data_root = "/expanse/lustre/scratch/t2hsu/temp_project/CW3E_WRF_RUNS/0.08deg/exp_20230107/bdy/CTL"
-pattern_file = "/home/t2hsu/projects/CW3E-WWRF-practice/simulations/104_Case20230101_Perturb/SST_forcing/SST_forcing_GHRSST-Mean_minus_oisst_2022P72.nc"
-pert_amps  = [ 0.0, 1.0,  2.0]
-pert_pats  = [ 0,  0,    0]
+pattern_files = [ "/home/t2hsu/projects/CW3E-WWRF-practice/simulations/104_Case20230101_Perturb/SST_forcing/SST_forcing_GHRSST-Mean_minus_oisst_2022P72.nc", "/home/t2hsu/projects/CW3E-WWRF-practice/simulations/105_Case20230107/SST_pattern_files/SST_forcing_constant.nc"]
+
+#pert_amps  = [ 0.0, 1.0,  2.0]
+#pert_pats  = [ 0,  0,    0]
+
+pert_amps  = [ 4.0, 2.0, -2.0,  -4.0]
+pert_pats  = [ 1, , 1, 1,   1]
+
 
 
 

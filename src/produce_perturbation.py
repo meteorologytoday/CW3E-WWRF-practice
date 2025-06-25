@@ -79,7 +79,7 @@ def work(details):
         if do_work:
             
             init_SST = xr.open_dataset(input_bdy_data_dir / bdy_files[0])
-            pert_SST = xr.open_dataset(interpolated_pattern_file)[pert_SST_varname].isel(pattern=pat)
+            pert_SST = xr.open_dataset(interpolated_pattern_file)[pert_SST_varname].isel(pattern=0)
             pert_SST *= amp 
 
             nan_cnt = np.sum(np.isnan(pert_SST))
@@ -209,7 +209,18 @@ if __name__ == "__main__":
         output_bdy_data_root = caserun_root / "bdy"
         print("Option `bdy_data_root` does not exist. Assume it is under the `caserun_root`. ")
         print("Set `bdy_data_root` = %s" % (output_bdy_data_root,))
+                        
 
+    pattern_files = case_setup["SST_perturbation"]["pattern_files"]
+
+    print("Find %d pattern files: " % (len(pattern_files)))
+    for i, pattern_file in enumerate(pattern_files):
+        print("[%d] %s" % (i, pattern_file,))
+    
+        
+    pert_pats = case_setup["SST_perturbation"]["pert_pats"]
+    if np.max(pert_pats) > len(pattern_files):
+        raise Exception("More patterns are asked than provided from `pattern_files`. Please check.")
 
     pat_amp_pairs = zip( 
         case_setup["SST_perturbation"]["pert_pats"],
@@ -235,6 +246,10 @@ if __name__ == "__main__":
 
         # This is for each perturbation pattern--amplitude combination
         output_bdy_data_subroot   = output_bdy_data_root / pert_label
+                        
+
+        pattern_file = pattern_files[pat]
+        interpolated_pattern_file = output_bdy_data_subroot / f"interpolated_pattern_PAT{pat:d}.nc"
 
         
         interpolate_perturbation_flag = False
@@ -294,14 +309,13 @@ if __name__ == "__main__":
                 
                 # Step 5: Making interpolated pattern file
                 #         Each pattern need one interpolation file, so we put it in output_bdy_data_subroot.
-                interpolated_pattern_file = output_bdy_data_subroot / "interpolated_pattern.nc"
                 print("Generating projected pattern file: ", interpolated_pattern_file)
                 if interpolated_pattern_file.exists():
                     print("Warning: pattern file %s already exists." % (interpolated_pattern_file,))
                 else:
                     print("Generating interpolated pattern file: ", interpolated_pattern_file)
                     pattern_tools.genInterpolatedPattern(
-                        pattern_file = case_setup["SST_perturbation"]["pattern_file"],
+                        pattern_file = pattern_file,
                         interpolated_grid_file = interpolated_grid_file,
                         interpolated_pattern_file = interpolated_pattern_file,
                         varname = args.pert_SST_varname,

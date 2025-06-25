@@ -2,7 +2,7 @@
 
 caserun_root=/home/t2hsu/temp_project/CW3E_WRF_RUNS/0.08deg/exp_20230107/runs
 
-groups=( PAT00_AMP0.0 PAT00_AMP2.0 )
+groups=( PAT01_AMP2.0 PAT01_AMP4.0 )
 
 cwd=`pwd`
 for group in "${groups[@]}" ; do
