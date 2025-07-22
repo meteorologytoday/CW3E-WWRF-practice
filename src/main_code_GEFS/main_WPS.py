@@ -59,7 +59,10 @@ def work(details):
  
         print("Making soft links...")       
         create_soft_links(WPS_DIR, WPS_TMP_DIR, skip_if_exists=True) 
-        pleaseRun(f"ln -s %s/ungrib/Variable_Tables/Vtable.GFSENS %s/Vtable" % (WPS_TMP_DIR, WPS_TMP_DIR,))
+        Vtable_file_src = WPS_TMP_DIR / "ungrib" / "Variable_Tables" / "Vtable.GFSENS"
+        Vtable_file_dst = WPS_TMP_DIR / "Vtable"
+        print("Using Vtable : ", str(Vtable_file_src))
+        pleaseRun("ln -s %s %s" % (str(Vtable_file_src), str(Vtable_file_dst),))
        
         # Run WPS
         geogrid_file = WPS_TMP_DIR / "geo_em.d01.nc"
